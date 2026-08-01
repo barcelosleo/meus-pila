@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MeusPila.Api/MeusPila.Api.csproj" />
+    <Project Path="src/MeusPila.Application/MeusPila.Application.csproj" />
+    <Project Path="src/MeusPila.Domain/MeusPila.Domain.csproj" />
+    <Project Path="src/MeusPila.Infrastructure/MeusPila.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MeusPila.Application.UnitTests/MeusPila.Application.UnitTests.csproj" />
+    <Project Path="tests/MeusPila.Domain.UnitTests/MeusPila.Domain.UnitTests.csproj" />
+    <Project Path="tests/MeusPila.IntegrationTests/MeusPila.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
