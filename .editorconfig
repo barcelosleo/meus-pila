@@ -27,9 +27,13 @@ indent_size = 2
 # Indentation and spacing
 indent_size = 4
 tab_width = 4
+indent_style = space
 
 # New line preferences
 insert_final_newline = false
+
+# Max characters per line
+max_line_length = 120
 
 #### .NET Coding Conventions ####
 [*.{cs,vb}]
