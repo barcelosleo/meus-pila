@@ -18,4 +18,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MeusPila.Domain\MeusPila.Domain.csproj" />
+    <ProjectReference Include="..\..\src\MeusPila.Application\MeusPila.Application.csproj" />
+  </ItemGroup>
+
 </Project>
