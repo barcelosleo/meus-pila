@@ -1,5 +1,8 @@
-using MeusPila.Domain.Entities;
+using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.Interfaces;
 
-public interface IUserRepository : IRepository<User> { }
+/// <summary>
+/// Represents a repository interface for performing CRUD operations on User entities.
+/// </summary>
+public interface IUserRepository : IRepository<UserEntity> { }
