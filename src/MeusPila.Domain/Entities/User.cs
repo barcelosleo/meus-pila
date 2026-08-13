@@ -6,6 +6,10 @@ public class User : IEntity
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public string Role { get; set; } = "User";
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -26,6 +30,7 @@ public class User : IEntity
         string name,
         string email,
         string passwordHash,
+        bool isActive,
         DateTime createdAt,
         DateTime updatedAt,
         Guid? createdBy = null,
@@ -36,6 +41,7 @@ public class User : IEntity
         Name = name;
         Email = email;
         PasswordHash = passwordHash;
+        IsActive = isActive;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         CreatedBy = createdBy;
