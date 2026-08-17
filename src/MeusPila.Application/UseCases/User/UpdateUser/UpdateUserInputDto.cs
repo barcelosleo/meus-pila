@@ -22,4 +22,5 @@ public record UpdateUserInputDto
     )]
     public string? NewPassword { get; init; }
     public bool? IsActive { get; init; }
+    public string? UpdatedById { get; init; }
 }
