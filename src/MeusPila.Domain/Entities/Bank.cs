@@ -1,21 +1,28 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using MeusPila.Domain.Interfaces;
+
 namespace MeusPila.Domain.Entities;
 
 public class Bank : IEntity
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid? CreatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
 
-    public Bank(string name, string code, DateTime? createdAt = null, DateTime? updatedAt = null)
-    {
-        Id = Guid.NewGuid();
-        Name = name;
-        Code = code;
-        CreatedAt = createdAt ?? DateTime.UtcNow;
-        UpdatedAt = updatedAt ?? DateTime.UtcNow;
-    }
+    [StringLength(100)]
+    public required string Name { get; set; }
+
+    [StringLength(20)]
+    public required string Code { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public Guid? UpdatedById { get; set; }
+
+    [ForeignKey("UpdatedById")]
+    public User? UpdatedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid? CreatedById { get; set; }
+
+    [ForeignKey("CreatedById")]
+    public User? CreatedBy { get; set; }
 }

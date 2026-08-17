@@ -1,10 +1,10 @@
-namespace MeusPila.Domain.Entities;
+namespace MeusPila.Domain.Interfaces;
 
 public interface IEntity
 {
     Guid Id { get; set; }
     DateTime CreatedAt { get; set; }
-    Guid? CreatedBy { get; set; }
+    Guid? CreatedById { get; set; }
     DateTime UpdatedAt { get; set; }
-    Guid? UpdatedBy { get; set; }
+    Guid? UpdatedById { get; set; }
 }

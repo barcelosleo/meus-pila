@@ -1,50 +1,48 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using MeusPila.Domain.Enums;
 using MeusPila.Domain.Interfaces;
-using MeusPila.Domain.ValueObjects;
 
 namespace MeusPila.Domain.Entities;
 
-public class FinancialTransaction : IEntity, IFinancialTransaction
+public abstract class FinancialTransaction : IEntity
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-    public DateOnly Date { get; set; }
-    public bool Performed { get; set; }
-    public TransactionType Type { get; set; }
-    public FinancialCategory Category { get; set; }
-    private TransactionValue Value { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public Guid? CreatedBy { get; set; }
+    public required DateOnly Date { get; set; }
+    public required bool Performed { get; set; }
+    public required TransactionType Type { get; set; }
+    public required Guid CategoryId { get; set; }
+
+    [ForeignKey("CategoryId")]
+    public required FinancialCategory Category { get; set; }
+    public Guid? ParentTransactionId { get; set; }
+
+    [ForeignKey("ParentTransactionId")]
+    public virtual FinancialTransaction? ParentTransaction { get; set; }
+
+    public decimal Value
+    {
+        get => GetValue();
+        set => SetValue(value);
+    }
+    protected decimal _value;
     public DateTime UpdatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
+    public Guid? UpdatedById { get; set; }
 
-    public FinancialTransaction(
-        decimal value,
-        DateOnly date,
-        TransactionType type,
-        FinancialCategory category,
-        bool performed = false,
-        DateTime? createdAt = null,
-        DateTime? updatedAt = null
-    )
-    {
-        Id = Guid.NewGuid();
-        Date = date;
-        Performed = performed;
-        Type = type;
-        Category = category;
-        Value = new TransactionValue(value);
-        CreatedAt = createdAt ?? DateTime.UtcNow;
-        UpdatedAt = updatedAt ?? DateTime.UtcNow;
-    }
+    [ForeignKey("UpdatedById")]
+    public User? UpdatedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid? CreatedById { get; set; }
 
-    public decimal GetValue()
-    {
-        return Value.Value;
-    }
+    [ForeignKey("CreatedById")]
+    public User? CreatedBy { get; set; }
 
-    public decimal GetValue(Expression<Func<IFinancialTransaction, bool>> filter)
-    {
-        return GetValue();
-    }
+    public abstract void SetValue(decimal value);
+
+    public abstract decimal GetValue();
+
+    public abstract decimal GetValue(Expression<Func<FinancialTransaction, bool>> filter);
 }
