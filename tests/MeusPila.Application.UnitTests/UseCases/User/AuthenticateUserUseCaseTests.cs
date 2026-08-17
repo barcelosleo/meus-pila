@@ -23,7 +23,14 @@ public class AuthenticateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenPasswordIsInvalid()
     {
-        var user = new UserEntity("Jane", "jane@mail.com", "hash") { IsActive = true };
+        var user = new UserEntity
+        {
+            Name = "Jane",
+            Email = "jane@mail.com",
+            PasswordHash = "hash",
+            IsActive = false,
+            Role = "User",
+        };
         var repository = new InMemoryUserRepository([user]);
         var passwordService = new FakePasswordService { VerifyResult = false };
         var jwtService = new FakeJwtService();
@@ -38,7 +45,14 @@ public class AuthenticateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenUserIsInactive()
     {
-        var user = new UserEntity("Jane", "jane@mail.com", "hash") { IsActive = false };
+        var user = new UserEntity
+        {
+            Name = "Jane",
+            Email = "jane@mail.com",
+            PasswordHash = "Hash#123asdasd",
+            IsActive = false,
+            Role = "User",
+        };
         var repository = new InMemoryUserRepository([user]);
         var passwordService = new FakePasswordService { VerifyResult = true };
         var jwtService = new FakeJwtService();
@@ -53,7 +67,14 @@ public class AuthenticateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnTokensAndPersistRefreshToken_WhenCredentialsAreValid()
     {
-        var user = new UserEntity("Jane", "jane@mail.com", "hash") { IsActive = true };
+        var user = new UserEntity
+        {
+            Name = "Jane",
+            Email = "jane@mail.com",
+            PasswordHash = "Hash#123asdasd",
+            IsActive = true,
+            Role = "User",
+        };
         var repository = new InMemoryUserRepository([user]);
         var passwordService = new FakePasswordService { VerifyResult = true };
         var jwtService = new FakeJwtService
@@ -75,7 +96,8 @@ public class AuthenticateUserUseCaseTests
         Assert.Equal(1, repository.UpdateCalls);
 
         var updatedUser = await repository.GetByIdAsync(user.Id);
-        Assert.Equal("refresh-123", updatedUser.RefreshToken);
+        Assert.NotNull(updatedUser);
+        Assert.Equal("refresh-123", updatedUser!.RefreshToken);
         Assert.True(updatedUser.RefreshTokenExpiryTime > DateTime.UtcNow.AddDays(6));
     }
 }

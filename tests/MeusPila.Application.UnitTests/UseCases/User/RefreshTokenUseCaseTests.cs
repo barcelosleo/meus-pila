@@ -22,8 +22,13 @@ public class RefreshTokenUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenTokenDoesNotMatch()
     {
-        var user = new UserEntity("Ana", "ana@mail.com", "hash")
+        var user = new UserEntity
         {
+            Name = "Ana",
+            Email = "ana@mail.com",
+            PasswordHash = "hash",
+            IsActive = true,
+            Role = "User",
             RefreshToken = "right-token",
             RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1),
         };
@@ -41,8 +46,13 @@ public class RefreshTokenUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenTokenIsExpired()
     {
-        var user = new UserEntity("Ana", "ana@mail.com", "hash")
+        var user = new UserEntity
         {
+            Name = "Ana",
+            Email = "ana@mail.com",
+            PasswordHash = "hash",
+            IsActive = true,
+            Role = "User",
             RefreshToken = "token",
             RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(-1),
         };
@@ -60,8 +70,13 @@ public class RefreshTokenUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnNewTokensAndPersistThem_WhenRefreshIsValid()
     {
-        var user = new UserEntity("Ana", "ana@mail.com", "hash")
+        var user = new UserEntity
         {
+            Name = "Ana",
+            Email = "ana@mail.com",
+            PasswordHash = "hash",
+            IsActive = true,
+            Role = "User",
             RefreshToken = "old-token",
             RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1),
         };
@@ -83,7 +98,8 @@ public class RefreshTokenUseCaseTests
         Assert.Equal(1, repository.UpdateCalls);
 
         var updatedUser = await repository.GetByIdAsync(user.Id);
-        Assert.Equal("new-refresh", updatedUser.RefreshToken);
+        Assert.NotNull(updatedUser);
+        Assert.Equal("new-refresh", updatedUser!.RefreshToken);
         Assert.True(updatedUser.RefreshTokenExpiryTime > DateTime.UtcNow.AddDays(6));
     }
 }

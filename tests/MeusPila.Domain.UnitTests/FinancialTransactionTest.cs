@@ -12,10 +12,10 @@ public class FinancialTransactionTest
         var value = 100m;
         var date = DateOnly.FromDateTime(DateTime.UtcNow);
         var type = TransactionType.Inflow;
-        var category = new FinancialCategory("Salary");
+        var category = CreateCategory("Salary");
 
         // Act
-        var transaction = new FinancialTransaction(value, date, type, category);
+        var transaction = CreateTransaction(value, date, type, category);
 
         // Assert
         Assert.Equal(value, transaction.GetValue());
@@ -31,9 +31,35 @@ public class FinancialTransactionTest
         var value = -100m;
         var date = DateOnly.FromDateTime(DateTime.UtcNow);
         var type = TransactionType.Inflow;
-        var category = new FinancialCategory("Salary");
+        var category = CreateCategory("Salary");
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new FinancialTransaction(value, date, type, category));
+        Assert.Throws<ArgumentException>(() => CreateTransaction(value, date, type, category));
+    }
+
+    private static FinancialCategory CreateCategory(string name)
+    {
+        return new FinancialCategory { Name = name };
+    }
+
+    private static IndividualTransaction CreateTransaction(
+        decimal value,
+        DateOnly date,
+        TransactionType type,
+        FinancialCategory category
+    )
+    {
+        var transaction = new IndividualTransaction
+        {
+            Date = date,
+            Performed = false,
+            Type = type,
+            Category = category,
+            CategoryId = category.Id,
+        };
+
+        transaction.SetValue(value);
+
+        return transaction;
     }
 }

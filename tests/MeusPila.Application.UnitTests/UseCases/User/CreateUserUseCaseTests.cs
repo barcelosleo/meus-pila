@@ -10,7 +10,14 @@ public class CreateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenEmailAlreadyExists()
     {
-        var existingUser = new UserEntity("Existing", "existing@mail.com", "hashed");
+        var existingUser = new UserEntity
+        {
+            Name = "Existing",
+            Email = "existing@mail.com",
+            PasswordHash = "hashed",
+            IsActive = true,
+            Role = "User",
+        };
         var repository = new InMemoryUserRepository([existingUser]);
         var useCase = new CreateUserUseCase(repository);
 
@@ -26,9 +33,35 @@ public class CreateUserUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCreateUserWithHashedPasswordAndLowerCaseEmail()
+    public async Task ExecuteAsync_ShouldThrow_WhenCreatedByUserDoesNotExist()
     {
         var repository = new InMemoryUserRepository();
+        var useCase = new CreateUserUseCase(repository);
+
+        var input = new CreateUserInputDto
+        {
+            Name = "New User",
+            Email = "new.user@mail.com",
+            Password = "Valid@123",
+            CreatedById = Guid.NewGuid().ToString(),
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
+        Assert.Equal(0, repository.AddCalls);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCreateUserWithHashedPasswordAndLowerCaseEmail()
+    {
+        var creator = new UserEntity
+        {
+            Name = "Admin",
+            Email = "admin@example.com",
+            PasswordHash = "hashed",
+            IsActive = true,
+            Role = "User",
+        };
+        var repository = new InMemoryUserRepository([creator]);
         var useCase = new CreateUserUseCase(repository);
 
         var input = new CreateUserInputDto
@@ -36,6 +69,7 @@ public class CreateUserUseCaseTests
             Name = "John",
             Email = "John.DOE@Example.COM",
             Password = "Valid@123",
+            CreatedById = creator.Id.ToString(),
         };
 
         var output = await useCase.ExecuteAsync(input);
@@ -47,6 +81,7 @@ public class CreateUserUseCaseTests
         var createdUser = await repository.GetByIdAsync(createdId);
         Assert.NotNull(createdUser);
         Assert.Equal("john.doe@example.com", createdUser.Email);
+        Assert.Equal(creator.Id, createdUser.CreatedById);
         Assert.NotEqual(input.Password, createdUser.PasswordHash);
 
         var passwordService = new PasswordService();

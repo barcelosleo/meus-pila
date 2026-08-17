@@ -65,11 +65,30 @@ public class UpdateUserUseCaseTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_ShouldThrow_WhenUpdatedByUserDoesNotExist()
+    {
+        var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
+        var repository = new InMemoryUserRepository([user]);
+        var useCase = new UpdateUserUseCase(repository);
+
+        var input = new UpdateUserInputDto
+        {
+            Id = user.Id.ToString(),
+            UpdatedById = Guid.NewGuid().ToString(),
+            Name = "Updated Name",
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
+        Assert.Equal(0, repository.UpdateCalls);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_ShouldUpdateUserDataAndPassword_WhenInputIsValid()
     {
         var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
+        var updater = CreateUserWithPassword("Updater", "updater@mail.com", "Updater@123");
         var oldHash = user.PasswordHash;
-        var repository = new InMemoryUserRepository([user]);
+        var repository = new InMemoryUserRepository([user, updater]);
         var useCase = new UpdateUserUseCase(repository);
 
         var input = new UpdateUserInputDto
@@ -80,6 +99,7 @@ public class UpdateUserUseCaseTests
             IsActive = false,
             CurrentPassword = "Current@123",
             NewPassword = "NewPass@123",
+            UpdatedById = updater.Id.ToString(),
         };
 
         var output = await useCase.ExecuteAsync(input);
@@ -91,9 +111,11 @@ public class UpdateUserUseCaseTests
         Assert.Equal(1, repository.UpdateCalls);
 
         var updatedUser = await repository.GetByIdAsync(user.Id);
-        Assert.Equal("Updated Name", updatedUser.Name);
-        Assert.Equal("updated@mail.com", updatedUser.Email);
+        Assert.NotNull(updatedUser);
+        Assert.Equal("Updated Name", updatedUser!.Name);
+        Assert.Equal("updated@mail.com", updatedUser!.Email);
         Assert.False(updatedUser.IsActive);
+        Assert.Equal(updater.Id, updatedUser.UpdatedById);
         Assert.NotEqual(oldHash, updatedUser.PasswordHash);
 
         var passwordService = new PasswordService();
@@ -102,7 +124,16 @@ public class UpdateUserUseCaseTests
 
     private static UserEntity CreateUserWithPassword(string name, string email, string password)
     {
-        var user = new UserEntity(name, email, password);
+        var user = new UserEntity
+        {
+            Name = name,
+            Email = email,
+            IsActive = true,
+            Role = "User",
+            PasswordHash = string.Empty, // Will be set after hashing
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
         var passwordService = new PasswordService();
         user.PasswordHash = passwordService.HashPassword(user, password);
         return user;
