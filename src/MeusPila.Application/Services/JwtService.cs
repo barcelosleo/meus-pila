@@ -46,13 +46,26 @@ public class JwtService : IJwtService
             throw new InvalidOperationException("O público do JWT não está configurado.");
         }
 
+        double? expiresInHours = _configuration.GetValue<double?>("Jwt:ExpirationTimeH");
+        if (!expiresInHours.HasValue)
+        {
+            expiresInHours = 1; // Default to 1 hour if not configured
+        }
+        else
+        {
+            if (expiresInHours <= 0)
+            {
+                throw new InvalidOperationException("O tempo de expiração do JWT deve ser maior que zero.");
+            }
+        }
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var tokenDescriptor = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddHours(expiresInHours.Value),
             signingCredentials: credentials
         );
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);

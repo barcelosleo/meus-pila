@@ -19,4 +19,13 @@ public record CreateUserInputDto
         ErrorMessage = "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
     )]
     public string Password { get; init; } = string.Empty;
+
+    [Required(ErrorMessage = "O papel do usuário é obrigatório.")]
+    [RegularExpression(
+        "Admin|User|HouseholdManager",
+        ErrorMessage = "O papel do usuário deve ser 'Admin', 'User' ou 'HouseholdManager'."
+    )]
+    public string Role { get; init; } = string.Empty;
+
+    public string? CreatedById { get; init; }
 }

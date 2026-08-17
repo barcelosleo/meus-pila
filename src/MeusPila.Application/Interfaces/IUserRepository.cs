@@ -1,8 +1,13 @@
-using UserEntity = MeusPila.Domain.Entities.User;
+using MeusPila.Domain.Entities;
 
 namespace MeusPila.Application.Interfaces;
 
 /// <summary>
 /// Represents a repository interface for performing CRUD operations on User entities.
 /// </summary>
-public interface IUserRepository : IRepository<UserEntity> { }
+public interface IUserRepository : IRepository<User>
+{
+    public Task<bool> IsMemberOfHouseholdAsync(Guid userId, Guid householdId);
+    public Task<bool> IsUserHouseholdManagerAsync(Guid userId, Guid householdId);
+    public Task<bool> UserCanViewHouseholdMembersAsync(Guid requesterId, Guid userId);
+}

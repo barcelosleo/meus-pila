@@ -3,7 +3,9 @@ using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UseCases.User.RefreshToken;
 
-public class RefreshTokenUseCase : IUseCase<RefreshTokenInputDto, RefreshTokenOutputDto>
+public interface IRefreshTokenUseCase : IUseCase<RefreshTokenInputDto, RefreshTokenOutputDto> { }
+
+public class RefreshTokenUseCase : IRefreshTokenUseCase
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtService _jwtService;
@@ -16,7 +18,7 @@ public class RefreshTokenUseCase : IUseCase<RefreshTokenInputDto, RefreshTokenOu
 
     public async Task<RefreshTokenOutputDto> ExecuteAsync(RefreshTokenInputDto input)
     {
-        UserEntity? user = await _userRepository.FindAsync(u => u.Id == input.UserId);
+        UserEntity? user = await _userRepository.GetByIdAsync(input.UserId);
         if (user is null)
         {
             throw new InvalidOperationException("Usuário não encontrado.");

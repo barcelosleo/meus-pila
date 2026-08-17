@@ -20,6 +20,10 @@ public class PasswordService : IPasswordService
 
     public bool VerifyPassword(UserEntity user, string password)
     {
+        if (user == null || string.IsNullOrEmpty(user.PasswordHash))
+        {
+            throw new ArgumentException("Usuário ou hash de senha inválido.");
+        }
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         return result switch
         {

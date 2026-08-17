@@ -14,7 +14,7 @@ public interface IRepository<TEntity>
     /// </summary>
     /// <param name="id"></param>
     /// <returns>The entity with the specified identifier. Null if not found.</returns>
-    public Task<TEntity> GetByIdAsync(Guid id);
+    public Task<TEntity?> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Gets all entities asynchronously.
@@ -55,14 +55,7 @@ public interface IRepository<TEntity>
     /// </summary>
     /// <param name="predicate"></param>
     /// <returns>The entity that matches the specified predicate. Null if not found.</returns>
-    public Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate);
-
-    /// <summary>
-    /// Finds all entities that match the specified predicate asynchronously.
-    /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns>A list of entities that match the specified predicate.</returns>
-    public Task<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> predicate);
+    public Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
     /// Counts the total number of entities asynchronously.
@@ -95,6 +88,7 @@ public interface IRepository<TEntity>
     /// Updates an existing entity in the repository asynchronously.
     /// </summary>
     /// <param name="entity">The entity to update.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the entity does not exist at the database.</exception>
     /// <returns>The updated entity.</returns>
     public Task<TEntity> UpdateAsync(TEntity entity);
 
@@ -102,6 +96,7 @@ public interface IRepository<TEntity>
     /// Updates multiple existing entities in the repository asynchronously.
     /// </summary>
     /// <param name="entities">The entities to update.</param>
+    /// <exception cref="InvalidOperationException">Thrown if any of the entities do not exist at the database.</exception>
     /// <returns>The updated entities.</returns>
     public Task<IEnumerable<TEntity>> UpdateAsync(IEnumerable<TEntity> entities);
 

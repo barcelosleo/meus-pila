@@ -3,7 +3,9 @@ using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UseCases.User.AuthenticateUser;
 
-class AuthenticateUserUseCase : IUseCase<AuthenticateUserInputDto, AuthenticateUserOutputDto>
+public interface IAuthenticateUserUseCase : IUseCase<AuthenticateUserInputDto, AuthenticateUserOutputDto> { }
+
+public class AuthenticateUserUseCase : IAuthenticateUserUseCase
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordService _passwordService;
@@ -22,7 +24,7 @@ class AuthenticateUserUseCase : IUseCase<AuthenticateUserInputDto, AuthenticateU
 
     public async Task<AuthenticateUserOutputDto> ExecuteAsync(AuthenticateUserInputDto input)
     {
-        UserEntity user = await _userRepository.FindAsync(u => u.Email == input.Email);
+        UserEntity? user = await _userRepository.FindAsync(u => u.Email == input.Email);
         if (user == null || !_passwordService.VerifyPassword(user, input.Password))
         {
             throw new InvalidOperationException("Email ou senha inválidos.");

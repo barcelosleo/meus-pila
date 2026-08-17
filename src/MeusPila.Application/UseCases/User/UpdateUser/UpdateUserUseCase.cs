@@ -4,7 +4,9 @@ using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UseCases.User.UpdateUser;
 
-public class UpdateUserUseCase : IUseCase<UpdateUserInputDto, UpdateUserOutputDto>
+public interface IUpdateUserUseCase : IUseCase<UpdateUserInputDto, UpdateUserOutputDto> { }
+
+public class UpdateUserUseCase : IUpdateUserUseCase
 {
     private readonly IUserRepository _userRepository;
 
@@ -15,7 +17,7 @@ public class UpdateUserUseCase : IUseCase<UpdateUserInputDto, UpdateUserOutputDt
 
     public async Task<UpdateUserOutputDto> ExecuteAsync(UpdateUserInputDto input)
     {
-        UserEntity user = await _userRepository.GetByIdAsync(Guid.Parse(input.Id));
+        UserEntity? user = await _userRepository.GetByIdAsync(Guid.Parse(input.Id));
         if (user == null)
         {
             throw new InvalidOperationException("Usuário não encontrado.");
@@ -33,7 +35,7 @@ public class UpdateUserUseCase : IUseCase<UpdateUserInputDto, UpdateUserOutputDt
             {
                 throw new InvalidOperationException("O email informado já está em uso.");
             }
-            user.Email = input.Email;
+            user.Email = input.Email.ToLower();
         }
 
         if (!string.IsNullOrEmpty(input.NewPassword))
@@ -58,14 +60,27 @@ public class UpdateUserUseCase : IUseCase<UpdateUserInputDto, UpdateUserOutputDt
             user.IsActive = input.IsActive.Value;
         }
 
-        await _userRepository.UpdateAsync(user);
+        if (!string.IsNullOrEmpty(input.UpdatedById))
+        {
+            var updaterId = Guid.Parse(input.UpdatedById);
+            bool updater = await _userRepository.CountAsync(u => u.Id == updaterId) > 0;
+            if (!updater)
+            {
+                throw new InvalidOperationException("O usuário que está atualizando o usuário não existe.");
+            }
+            user.UpdatedById = updaterId;
+        }
+
+        user.UpdatedAt = DateTime.UtcNow;
+
+        UserEntity updatedUser = await _userRepository.UpdateAsync(user);
 
         return new UpdateUserOutputDto
         {
-            Id = user.Id.ToString(),
-            Name = user.Name,
-            Email = user.Email,
-            IsActive = user.IsActive,
+            Id = updatedUser.Id.ToString(),
+            Name = updatedUser.Name,
+            Email = updatedUser.Email,
+            IsActive = updatedUser.IsActive,
         };
     }
 }
