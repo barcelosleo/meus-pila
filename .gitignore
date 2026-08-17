@@ -411,3 +411,5 @@ obj/
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,csharp
 
 .env
+appsettings.json
+appsettings.Development.json
