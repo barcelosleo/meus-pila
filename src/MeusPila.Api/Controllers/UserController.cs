@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using MeusPila.Application.Interfaces;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
 using MeusPila.Application.UseCases.User.CreateUser;
 using MeusPila.Application.UseCases.User.GetUser;
