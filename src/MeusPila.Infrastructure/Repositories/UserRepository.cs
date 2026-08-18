@@ -30,4 +30,33 @@ public class UserRepository : BaseRepository<User>, IUserRepository
             hu.UserId == userId && hu.Household.OwnerId == requesterId
         );
     }
+
+    public async Task<IEnumerable<Household>> GetHouseholdsByUserIdAsync(
+        Guid userId,
+        int pageNumber,
+        int pageSize,
+        string? searchTerm = null
+    )
+    {
+        var query = _dbContext.HouseholdUsers.Where(hu => hu.UserId == userId).Select(hu => hu.Household).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(h => h.Name.Contains(searchTerm));
+        }
+
+        return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+    }
+
+    public async Task<int> CountHouseholdsByUserIdAsync(Guid userId, string? searchTerm = null)
+    {
+        var query = _dbContext.HouseholdUsers.Where(hu => hu.UserId == userId).Select(hu => hu.Household).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(h => h.Name.ToLower().Contains(searchTerm.ToLower()));
+        }
+
+        return await query.CountAsync();
+    }
 }

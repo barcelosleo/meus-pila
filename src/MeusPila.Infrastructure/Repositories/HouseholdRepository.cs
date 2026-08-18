@@ -50,8 +50,8 @@ public class HouseholdRepository : BaseRepository<Household>, IHouseholdReposito
     {
         var members = _dbContext.HouseholdUsers.Where(hu => hu.HouseholdId == household.Id);
         var users = await _dbContext
-            .Users.Join(members, u => u.Id, hu => hu.UserId, (u, hu) => new { User = u, HouseholdUser = hu })
-            .Select(u => u.User)
+            .HouseholdUsers.Where(hu => hu.HouseholdId == household.Id)
+            .Select(hu => hu.User)
             .ToListAsync();
         return users;
     }
