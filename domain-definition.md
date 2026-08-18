@@ -31,6 +31,8 @@ Define um usuário do sistema. Seus atributos são:
 
 Um usuário começa com papel `User`. Pode ser promovido a `GroupManager` e depois a `Admin`.
 
+Quando um usuário é removido, toda as suas contas devem ser removidas também. Além disso, caso seja o Owner de algum grupo, o segundo usuário mais antigo do grupo se torna o Owner. Caso esse usuário tenha categorias próprias, deve-se removê-las.
+
 ## Grupo
 
 Define um grupo de usuários onde divisões financeiras podem ser compartilhadas. 
