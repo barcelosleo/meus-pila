@@ -24,6 +24,8 @@ public class GetUserUseCase : IGetUserUseCase
             );
         }
 
+        // Check if the requester has permission to access the requested user's information
+        // Always can get their own information, Admin can get any user, HouseholdManager can get users in their household
         if (requester.Role != "Admin" && requester.Role != "HouseholdManager" && requester.Id.ToString() != input.Id)
         {
             throw new UnauthorizedAccessException(

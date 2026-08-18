@@ -90,8 +90,8 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("create")]
-    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [Authorize(Roles = "Admin,HouseholdManager")]
     public async Task<ActionResult<CreateUserOutputDto>> CreateUser([FromBody] CreateUserInputDto input)
     {
         try
@@ -106,7 +106,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("list")]
+    [HttpGet]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ListUsersOutputDto>> ListUsers([FromQuery] ListUsersInputDto input)
     {
