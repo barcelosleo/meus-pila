@@ -3,6 +3,7 @@ using MeusPila.Application.UseCases.Group.AddMember;
 using MeusPila.Application.UseCases.Group.CreateGroup;
 using MeusPila.Application.UseCases.Group.GetGroup;
 using MeusPila.Application.UseCases.Group.ListGroups;
+using MeusPila.Application.UseCases.Group.RemoveGroup;
 using MeusPila.Application.UseCases.Group.RemoveMember;
 using MeusPila.Application.UseCases.Group.UpdateGroup;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ public class GroupController : ControllerBase
     private readonly IUpdateGroupUseCase _updateGroupUseCase;
     private readonly IAddMemberUseCase _addMemberUseCase;
     private readonly IRemoveMemberUseCase _removeMemberUseCase;
+    private readonly IRemoveGroupUseCase _removeGroupUseCase;
 
     public GroupController(
         ILogger<GroupController> logger,
@@ -29,7 +31,8 @@ public class GroupController : ControllerBase
         IGetGroupUseCase getGroupUseCase,
         IUpdateGroupUseCase updateGroupUseCase,
         IAddMemberUseCase addMemberUseCase,
-        IRemoveMemberUseCase removeMemberUseCase
+        IRemoveMemberUseCase removeMemberUseCase,
+        IRemoveGroupUseCase removeGroupUseCase
     )
     {
         _logger = logger;
@@ -39,6 +42,7 @@ public class GroupController : ControllerBase
         _updateGroupUseCase = updateGroupUseCase;
         _addMemberUseCase = addMemberUseCase;
         _removeMemberUseCase = removeMemberUseCase;
+        _removeGroupUseCase = removeGroupUseCase;
     }
 
     [HttpGet("{id}")]
@@ -173,6 +177,24 @@ public class GroupController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error removing member from group.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<ActionResult> RemoveGroup(string id)
+    {
+        try
+        {
+            string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var input = new RemoveGroupInputDto { GroupId = id, RequesterId = requesterId! };
+            await _removeGroupUseCase.ExecuteAsync(input);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing group.");
             return BadRequest(new { message = ex.Message });
         }
     }

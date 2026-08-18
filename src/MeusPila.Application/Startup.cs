@@ -4,6 +4,7 @@ using MeusPila.Application.UseCases.Group.AddMember;
 using MeusPila.Application.UseCases.Group.CreateGroup;
 using MeusPila.Application.UseCases.Group.GetGroup;
 using MeusPila.Application.UseCases.Group.ListGroups;
+using MeusPila.Application.UseCases.Group.RemoveGroup;
 using MeusPila.Application.UseCases.Group.RemoveMember;
 using MeusPila.Application.UseCases.Group.UpdateGroup;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
@@ -40,6 +41,7 @@ public static class Startup
         services.AddScoped<IGetGroupUseCase, GetGroupUseCase>();
         services.AddScoped<IAddMemberUseCase, AddMemberUseCase>();
         services.AddScoped<IRemoveMemberUseCase, RemoveMemberUseCase>();
+        services.AddScoped<IRemoveGroupUseCase, RemoveGroupUseCase>();
 
         return services;
     }
