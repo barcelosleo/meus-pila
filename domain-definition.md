@@ -22,16 +22,16 @@ Define um usuário do sistema. Seus atributos são:
 - **PasswordHash**: Hash da senha (não armazenar senha em texto plano)
 - **Papel**: Um dos seguintes valores
   - `Admin`: Administrador do sistema, gerencia categorias padrão
-  - `HouseholdManager`: Gerenciador de grupos, pode gerenciar grupos que é owner
+  - `GroupManager`: Gerenciador de grupos, pode gerenciar grupos que é owner
   - `User`: Usuário comum
 - **IsActive**: Flag indicando se o usuário está ativo
 - **RefreshToken**: Token para renovação de JWT
 - **RefreshTokenExpiryTime**: Data de expiração do refresh token
 - **Auditoria**: CreatedAt, UpdatedAt, CreatedById, UpdatedById
 
-Um usuário começa com papel `User`. Pode ser promovido a `HouseholdManager` e depois a `Admin`.
+Um usuário começa com papel `User`. Pode ser promovido a `GroupManager` e depois a `Admin`.
 
-## Grupo (Household)
+## Grupo
 
 Define um grupo de usuários onde divisões financeiras podem ser compartilhadas. 
 
@@ -39,16 +39,16 @@ Define um grupo de usuários onde divisões financeiras podem ser compartilhadas
 - **Id**: Identificador único (GUID)
 - **Nome**: Nome do grupo
 - **Owner**: Usuário que é dono do grupo (pode adicionar e remover membros)
-- **HouseholdUsers**: Coleção de membros (relação muitos-para-muitos com Usuário)
+- **GroupUsers**: Coleção de membros (relação muitos-para-muitos com Usuário)
 - **Auditoria**: CreatedAt, UpdatedAt, CreatedById, UpdatedById
 
 ### Relações
-- Relação **n para n** com Usuário via tabela `HouseholdUser`
+- Relação **n para n** com Usuário via tabela `GroupUser`
 - Um usuário pode participar de vários grupos
 - Um grupo pode ter vários usuários
 
 ### Permissões
-- **Owner**: Pode adicionar e remover membros do grupo. Um `HouseholdManager` é o owner do seu grupo.
+- **Owner**: Pode adicionar e remover membros do grupo. Um `GroupManager` é o owner do seu grupo.
 - **Membros**: Podem criar divisões e alterar divisões que participam (veja seção "Transação de Divisão")
 
 ## Banco
@@ -118,7 +118,7 @@ Define categorias para classificar transações. Suporta hierarquia de categoria
 - Só podem ser alteradas pelo criador
 - Visíveis apenas para o usuário criador por padrão
 
-### Compartilhamento de Categorias em Household
+### Compartilhamento de Categorias em Grupo
 **[Status: Em desenvolvimento]**
 
 Categorias personalizadas poderão ser compartilhadas entre membros de um grupo via configuração explícita. Um usuário pode:
@@ -210,7 +210,7 @@ Atualmente implementada como `InstallmentTransaction` (estendendo `CompositeTran
 #### Transação de Divisão
 **[Status: Em desenvolvimento]**
 
-Especialização de `CompositeTransaction` que permite divisão de despesas entre membros de um Household.
+Especialização de `CompositeTransaction` que permite divisão de despesas entre membros de um Grupo.
 
 **Comportamento**:
 - Criada por um membro do grupo com um valor total definido
@@ -244,13 +244,13 @@ Há uma relação **muitos-para-muitos** entre `FinancialAccount` e `FinancialTr
 
 ```mermaid
 erDiagram
-    USER ||--o{ HOUSEHOLD : owns
+    USER ||--o{ GROUP : owns
     USER ||--o{ FINANCIALACCOUNT : owns
     USER ||--o{ FINANCIALCATEGORY : creates
     USER ||--o{ FINANCIALTRANSACTION : creates
     
-    USER ||--o{ HOUSEHOLDUSER : participates
-    HOUSEHOLD ||--o{ HOUSEHOLDUSER : has
+    USER ||--o{ GROUPUSER : participates
+    GROUP ||--o{ GROUPUSER : has
     
     BANK ||--o{ FINANCIALACCOUNT : "has"
     
@@ -277,7 +277,7 @@ erDiagram
         guid CreatedById FK
     }
     
-    HOUSEHOLD {
+    GROUP {
         guid Id PK
         string Name
         guid OwnerId FK
@@ -287,9 +287,9 @@ erDiagram
         guid CreatedById FK
     }
     
-    HOUSEHOLDUSER {
+    GROUPUSER {
         guid UserId PK_FK
-        guid HouseholdId PK_FK
+        guid GroupId PK_FK
     }
     
     BANK {
@@ -352,8 +352,8 @@ erDiagram
 
 | Relação | Tipo | Descrição |
 |---------|------|-----------|
-| User → Household | 1:n | Um usuário é dono de múltiplos grupos |
-| User → HouseholdUser → Household | n:m | Um usuário participa de múltiplos grupos |
+| User → Group | 1:n | Um usuário é dono de múltiplos grupos |
+| User → GroupUser → Group | n:m | Um usuário participa de múltiplos grupos |
 | User → FinancialAccount | 1:n | Um usuário é dono de múltiplas contas |
 | User → FinancialCategory | 1:n | Um usuário cria múltiplas categorias |
 | User → FinancialTransaction | 1:n | Um usuário cria múltiplas transações |
