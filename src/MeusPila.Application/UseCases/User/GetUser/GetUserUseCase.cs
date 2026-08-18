@@ -24,7 +24,7 @@ public class GetUserUseCase : IGetUserUseCase
             );
         }
 
-        if (requester.Role != "Admin" && requester.Role != "HouseholdManager")
+        if (requester.Role != "Admin" && requester.Role != "HouseholdManager" && requester.Id.ToString() != input.Id)
         {
             throw new UnauthorizedAccessException(
                 "O usuário não tem permissão para acessar as informações de outro usuário."
@@ -38,7 +38,7 @@ public class GetUserUseCase : IGetUserUseCase
             throw new ArgumentException($"O usuário com ID {input.Id} não foi encontrado.");
         }
 
-        if (requester.Role == "HouseholdManager")
+        if (requester.Role == "HouseholdManager" && requester.Id.ToString() != input.Id)
         {
             var requesterCanSeeUser = await _userRepository.UserCanViewHouseholdMembersAsync(requesterId, userId);
             if (!requesterCanSeeUser)

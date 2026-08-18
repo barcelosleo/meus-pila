@@ -2,6 +2,7 @@ using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
 using MeusPila.Application.UseCases.User.CreateUser;
+using MeusPila.Application.UseCases.User.GetUser;
 using MeusPila.Application.UseCases.User.ListUsers;
 using MeusPila.Application.UseCases.User.RefreshToken;
 using MeusPila.Application.UseCases.User.UpdateUser;
@@ -21,6 +22,7 @@ public static class Startup
         services.AddScoped<IRefreshTokenUseCase, RefreshTokenUseCase>();
         services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
         services.AddScoped<IListUsersUseCase, ListUsersUseCase>();
+        services.AddScoped<IGetUserUseCase, GetUserUseCase>();
 
         return services;
     }

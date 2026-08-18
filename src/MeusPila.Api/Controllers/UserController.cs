@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using MeusPila.Application.Interfaces;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
 using MeusPila.Application.UseCases.User.CreateUser;
+using MeusPila.Application.UseCases.User.GetUser;
 using MeusPila.Application.UseCases.User.ListUsers;
 using MeusPila.Application.UseCases.User.RefreshToken;
 using Microsoft.AspNetCore.Authorization;
@@ -17,13 +19,15 @@ public class UserController : ControllerBase
     private readonly ICreateUserUseCase _createUserUseCase;
     private readonly IRefreshTokenUseCase _refreshTokenUseCase;
     private readonly IListUsersUseCase _listUsersUseCase;
+    private readonly IGetUserUseCase _getUserUseCase;
 
     public UserController(
         ILogger<UserController> logger,
         IAuthenticateUserUseCase authenticateUserUseCase,
         ICreateUserUseCase createUserUseCase,
         IRefreshTokenUseCase refreshTokenUseCase,
-        IListUsersUseCase listUsersUseCase
+        IListUsersUseCase listUsersUseCase,
+        IGetUserUseCase getUserUseCase
     )
     {
         _logger = logger;
@@ -31,6 +35,7 @@ public class UserController : ControllerBase
         _createUserUseCase = createUserUseCase;
         _refreshTokenUseCase = refreshTokenUseCase;
         _listUsersUseCase = listUsersUseCase;
+        _getUserUseCase = getUserUseCase;
     }
 
     [HttpPost("authenticate")]
@@ -52,7 +57,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<ActionResult<RefreshTokenOutputDto>> RefreshToken([FromBody] RefreshTokenInputDto refreshToken)
     {
         try
@@ -63,6 +68,25 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error refreshing token.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<GetUserOutputDto>> GetCurrentUser()
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try
+        {
+            var output = await _getUserUseCase.ExecuteAsync(
+                new GetUserInputDto { Id = userId!, RequesterId = userId! }
+            );
+            return Ok(output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting current user.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -95,6 +119,25 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error listing users.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<ActionResult<GetUserOutputDto>> GetUserById([FromRoute] string id)
+    {
+        string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try
+        {
+            var output = await _getUserUseCase.ExecuteAsync(
+                new GetUserInputDto { Id = id, RequesterId = requesterId! }
+            );
+            return Ok(output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user by id.");
             return BadRequest(new { message = ex.Message });
         }
     }
