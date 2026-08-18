@@ -27,7 +27,7 @@ public class CreateGroupUseCaseTests
 
         Assert.Equal("Family", output.Name);
         Assert.Equal(owner.Id.ToString(), output.OwnerId);
-        Assert.Equal("HouseholdManager", owner.Role);
+        Assert.Equal("GroupManager", owner.Role);
         Assert.Equal(1, repository.AddCalls);
     }
 

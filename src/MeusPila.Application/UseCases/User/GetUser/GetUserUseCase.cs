@@ -25,8 +25,8 @@ public class GetUserUseCase : IGetUserUseCase
         }
 
         // Check if the requester has permission to access the requested user's information
-        // Always can get their own information, Admin can get any user, HouseholdManager can get users in their household
-        if (requester.Role != "Admin" && requester.Role != "HouseholdManager" && requester.Id.ToString() != input.Id)
+        // Always can get their own information, Admin can get any user, GroupManager can get users in their household
+        if (requester.Role != "Admin" && requester.Role != "GroupManager" && requester.Id.ToString() != input.Id)
         {
             throw new UnauthorizedAccessException(
                 "O usuário não tem permissão para acessar as informações de outro usuário."
@@ -40,7 +40,7 @@ public class GetUserUseCase : IGetUserUseCase
             throw new ArgumentException($"O usuário com ID {input.Id} não foi encontrado.");
         }
 
-        if (requester.Role == "HouseholdManager" && requester.Id.ToString() != input.Id)
+        if (requester.Role == "GroupManager" && requester.Id.ToString() != input.Id)
         {
             var requesterCanSeeUser = await _userRepository.UserCanViewGroupMembersAsync(requesterId, userId);
             if (!requesterCanSeeUser)
@@ -56,6 +56,7 @@ public class GetUserUseCase : IGetUserUseCase
             Id = user.Id.ToString(),
             Name = user.Name,
             Email = user.Email,
+            Role = user.Role,
             CreatedAt = user.CreatedAt,
             CreatedById = user.CreatedById?.ToString() ?? "",
             UpdatedAt = user.UpdatedAt,

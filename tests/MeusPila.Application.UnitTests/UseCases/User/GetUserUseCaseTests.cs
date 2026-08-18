@@ -43,7 +43,7 @@ public class GetUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenManagerCannotViewUser()
     {
-        var requester = CreateUser("Manager", "HouseholdManager");
+        var requester = CreateUser("Manager", "GroupManager");
         var user = CreateUser("User", "User");
         var repository = new Mock<IUserRepository>();
         repository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);

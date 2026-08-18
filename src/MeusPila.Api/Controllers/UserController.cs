@@ -4,6 +4,7 @@ using MeusPila.Application.UseCases.User.CreateUser;
 using MeusPila.Application.UseCases.User.GetUser;
 using MeusPila.Application.UseCases.User.ListUsers;
 using MeusPila.Application.UseCases.User.RefreshToken;
+using MeusPila.Application.UseCases.User.RemoveUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,7 @@ public class UserController : ControllerBase
     private readonly IRefreshTokenUseCase _refreshTokenUseCase;
     private readonly IListUsersUseCase _listUsersUseCase;
     private readonly IGetUserUseCase _getUserUseCase;
+    private readonly IRemoveUserUseCase _removeUserUseCase;
 
     public UserController(
         ILogger<UserController> logger,
@@ -26,7 +28,8 @@ public class UserController : ControllerBase
         ICreateUserUseCase createUserUseCase,
         IRefreshTokenUseCase refreshTokenUseCase,
         IListUsersUseCase listUsersUseCase,
-        IGetUserUseCase getUserUseCase
+        IGetUserUseCase getUserUseCase,
+        IRemoveUserUseCase removeUserUseCase
     )
     {
         _logger = logger;
@@ -35,6 +38,7 @@ public class UserController : ControllerBase
         _refreshTokenUseCase = refreshTokenUseCase;
         _listUsersUseCase = listUsersUseCase;
         _getUserUseCase = getUserUseCase;
+        _removeUserUseCase = removeUserUseCase;
     }
 
     [HttpPost("authenticate")]
@@ -91,7 +95,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,HouseholdManager")]
+    [Authorize(Roles = "Admin,GroupManager")]
     public async Task<ActionResult<CreateUserOutputDto>> CreateUser([FromBody] CreateUserInputDto input)
     {
         try
@@ -137,6 +141,23 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting user by id.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> RemoveUser([FromRoute] string id)
+    {
+        string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try
+        {
+            await _removeUserUseCase.ExecuteAsync(new RemoveUserInputDto { Id = id, RequesterId = requesterId! });
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing user.");
             return BadRequest(new { message = ex.Message });
         }
     }

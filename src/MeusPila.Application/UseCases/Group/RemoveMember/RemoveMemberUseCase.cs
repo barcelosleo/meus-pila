@@ -35,12 +35,12 @@ public class RemoveMemberUseCase : IRemoveMemberUseCase
             throw new ArgumentException($"O usuário com ID {input.UpdatedById} não foi encontrado.");
         }
 
-        if (requester.Role != "Admin" && requester.Role != "HouseholdManager")
+        if (requester.Role != "Admin" && requester.Role != "GroupManager")
         {
             throw new UnauthorizedAccessException("Apenas administradores ou gerentes do grupo podem remover membros.");
         }
 
-        if (requester.Role == "HouseholdManager" && group.OwnerId != requester.Id)
+        if (requester.Role == "GroupManager" && group.OwnerId != requester.Id)
         {
             throw new UnauthorizedAccessException("Apenas o gerente do grupo pode remover membros.");
         }

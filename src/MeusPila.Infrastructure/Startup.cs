@@ -20,7 +20,7 @@ public static class Startup
         services.AddAuthorization(options =>
         {
             options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-            options.AddPolicy("HouseholdManagerOnly", policy => policy.RequireRole("HouseholdManager"));
+            options.AddPolicy("GroupManagerOnly", policy => policy.RequireRole("GroupManager"));
             options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
         });
         return services;

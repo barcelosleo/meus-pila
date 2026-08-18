@@ -11,6 +11,7 @@ using MeusPila.Application.UseCases.User.CreateUser;
 using MeusPila.Application.UseCases.User.GetUser;
 using MeusPila.Application.UseCases.User.ListUsers;
 using MeusPila.Application.UseCases.User.RefreshToken;
+using MeusPila.Application.UseCases.User.RemoveUser;
 using MeusPila.Application.UseCases.User.UpdateUser;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,7 @@ public static class Startup
         services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
         services.AddScoped<IListUsersUseCase, ListUsersUseCase>();
         services.AddScoped<IGetUserUseCase, GetUserUseCase>();
+        services.AddScoped<IRemoveUserUseCase, RemoveUserUseCase>();
 
         // Group Use Cases
         services.AddScoped<ICreateGroupUseCase, CreateGroupUseCase>();

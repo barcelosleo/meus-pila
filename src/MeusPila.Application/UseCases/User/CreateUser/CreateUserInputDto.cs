@@ -22,8 +22,8 @@ public record CreateUserInputDto
 
     [Required(ErrorMessage = "O papel do usuário é obrigatório.")]
     [RegularExpression(
-        "Admin|User|HouseholdManager",
-        ErrorMessage = "O papel do usuário deve ser 'Admin', 'User' ou 'HouseholdManager'."
+        "Admin|User|GroupManager",
+        ErrorMessage = "O papel do usuário deve ser 'Admin', 'User' ou 'GroupManager'."
     )]
     public string Role { get; init; } = string.Empty;
 

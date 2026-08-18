@@ -40,10 +40,10 @@ public class CreateGroupUseCase : ICreateGroupUseCase
             }
         }
 
-        // If the owner is a regular user, promote them to HouseholdManager
+        // If the owner is a regular user, promote them to GroupManager
         if (owner.Role == "User")
         {
-            owner.Role = "HouseholdManager";
+            owner.Role = "GroupManager";
         }
 
         var group = new GroupEntity

@@ -10,7 +10,7 @@ public class AddMemberUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldAddMemberAndReturnMembers()
     {
-        var requester = GroupTestData.CreateUser("Requester", "HouseholdManager");
+        var requester = GroupTestData.CreateUser("Requester", "GroupManager");
         var member = GroupTestData.CreateUser("Member");
         var household = GroupTestData.CreateGroup(requester);
         var householdRepository = new InMemoryHouseholdRepository([household]);

@@ -55,7 +55,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting household.");
+            _logger.LogError(ex, "Error getting group.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -80,7 +80,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing households.");
+            _logger.LogError(ex, "Error listing groups.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -103,7 +103,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating household.");
+            _logger.LogError(ex, "Error creating group.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -126,7 +126,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating household.");
+            _logger.LogError(ex, "Error updating group.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -149,7 +149,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding member to household.");
+            _logger.LogError(ex, "Error adding member to group.");
             return BadRequest(new { message = ex.Message });
         }
     }
@@ -172,7 +172,7 @@ public class GroupController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing member from household.");
+            _logger.LogError(ex, "Error removing member from group.");
             return BadRequest(new { message = ex.Message });
         }
     }

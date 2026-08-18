@@ -10,7 +10,7 @@ public class RemoveMemberUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldRemoveMember_WhenRequesterIsOwnerManager()
     {
-        var owner = GroupTestData.CreateUser("Owner", "HouseholdManager");
+        var owner = GroupTestData.CreateUser("Owner", "GroupManager");
         var member = GroupTestData.CreateUser("Member");
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(owner.Id)).ReturnsAsync(owner);
@@ -45,7 +45,7 @@ public class RemoveMemberUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenRegularUserRequestsRemoval()
     {
-        var owner = GroupTestData.CreateUser("Owner", "HouseholdManager");
+        var owner = GroupTestData.CreateUser("Owner", "GroupManager");
         var requester = GroupTestData.CreateUser("Requester");
         var member = GroupTestData.CreateUser("Member");
         var household = GroupTestData.CreateGroup(owner);
