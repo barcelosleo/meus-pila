@@ -93,6 +93,16 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         return _dbContext.SaveChangesAsync();
     }
 
+    public Task DeleteAsync(Guid id)
+    {
+        var entity = _dbSet.Find(id);
+        if (entity != null)
+        {
+            _dbSet.Remove(entity);
+        }
+        return _dbContext.SaveChangesAsync();
+    }
+
     public Task DeleteAsync(IEnumerable<TEntity> entities)
     {
         _dbSet.RemoveRange(entities);

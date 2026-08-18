@@ -103,6 +103,12 @@ public interface IRepository<TEntity>
     /// <summary>
     /// Deletes an entity from the repository asynchronously.
     /// </summary>
+    /// <param name="id">The ID of the entity to delete.</param>
+    public Task DeleteAsync(Guid id);
+
+    /// <summary>
+    /// Deletes an entity from the repository asynchronously.
+    /// </summary>
     /// <param name="entity">The entity to delete.</param>
     public Task DeleteAsync(TEntity entity);
 
