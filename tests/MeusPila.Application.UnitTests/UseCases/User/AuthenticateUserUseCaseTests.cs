@@ -1,5 +1,7 @@
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
+using Moq;
 using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UnitTests.UseCases.User;
@@ -9,15 +11,20 @@ public class AuthenticateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenUserDoesNotExist()
     {
-        var repository = new InMemoryUserRepository();
+        var repository = new Mock<IUserRepository>();
+        repository
+            .Setup(repository =>
+                repository.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync((UserEntity?)null);
         var passwordService = new FakePasswordService { VerifyResult = true };
         var jwtService = new FakeJwtService();
-        var useCase = new AuthenticateUserUseCase(repository, passwordService, jwtService);
+        var useCase = new AuthenticateUserUseCase(repository.Object, passwordService, jwtService);
 
         var input = new AuthenticateUserInputDto { Email = "missing@mail.com", Password = "secret" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -31,15 +38,20 @@ public class AuthenticateUserUseCaseTests
             IsActive = false,
             Role = "User",
         };
-        var repository = new InMemoryUserRepository([user]);
+        var repository = new Mock<IUserRepository>();
+        repository
+            .Setup(repository =>
+                repository.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(user);
         var passwordService = new FakePasswordService { VerifyResult = false };
         var jwtService = new FakeJwtService();
-        var useCase = new AuthenticateUserUseCase(repository, passwordService, jwtService);
+        var useCase = new AuthenticateUserUseCase(repository.Object, passwordService, jwtService);
 
         var input = new AuthenticateUserInputDto { Email = "jane@mail.com", Password = "wrong" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -53,15 +65,20 @@ public class AuthenticateUserUseCaseTests
             IsActive = false,
             Role = "User",
         };
-        var repository = new InMemoryUserRepository([user]);
+        var repository = new Mock<IUserRepository>();
+        repository
+            .Setup(repository =>
+                repository.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(user);
         var passwordService = new FakePasswordService { VerifyResult = true };
         var jwtService = new FakeJwtService();
-        var useCase = new AuthenticateUserUseCase(repository, passwordService, jwtService);
+        var useCase = new AuthenticateUserUseCase(repository.Object, passwordService, jwtService);
 
         var input = new AuthenticateUserInputDto { Email = "jane@mail.com", Password = "secret" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -75,7 +92,13 @@ public class AuthenticateUserUseCaseTests
             IsActive = true,
             Role = "User",
         };
-        var repository = new InMemoryUserRepository([user]);
+        var repository = new Mock<IUserRepository>();
+        repository
+            .Setup(repository =>
+                repository.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(user);
+        repository.Setup(repository => repository.UpdateAsync(user)).ReturnsAsync(user);
         var passwordService = new FakePasswordService { VerifyResult = true };
         var jwtService = new FakeJwtService
         {
@@ -83,7 +106,7 @@ public class AuthenticateUserUseCaseTests
             RefreshTokenToReturn = "refresh-123",
         };
 
-        var useCase = new AuthenticateUserUseCase(repository, passwordService, jwtService);
+        var useCase = new AuthenticateUserUseCase(repository.Object, passwordService, jwtService);
         var input = new AuthenticateUserInputDto { Email = "jane@mail.com", Password = "secret" };
 
         var output = await useCase.ExecuteAsync(input);
@@ -93,11 +116,8 @@ public class AuthenticateUserUseCaseTests
         Assert.Equal("jane@mail.com", output.Email);
         Assert.Equal("access-123", output.AccessToken);
         Assert.Equal("refresh-123", output.RefreshToken);
-        Assert.Equal(1, repository.UpdateCalls);
-
-        var updatedUser = await repository.GetByIdAsync(user.Id);
-        Assert.NotNull(updatedUser);
-        Assert.Equal("refresh-123", updatedUser!.RefreshToken);
-        Assert.True(updatedUser.RefreshTokenExpiryTime > DateTime.UtcNow.AddDays(6));
+        repository.Verify(repository => repository.UpdateAsync(user), Times.Once);
+        Assert.Equal("refresh-123", user.RefreshToken);
+        Assert.True(user.RefreshTokenExpiryTime > DateTime.UtcNow.AddDays(6));
     }
 }

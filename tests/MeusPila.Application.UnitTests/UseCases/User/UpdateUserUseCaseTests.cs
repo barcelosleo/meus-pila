@@ -1,6 +1,7 @@
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.User.UpdateUser;
+using Moq;
 using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UnitTests.UseCases.User;
@@ -10,13 +11,14 @@ public class UpdateUserUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenUserDoesNotExist()
     {
-        var repository = new InMemoryUserRepository();
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((UserEntity?)null);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto { Id = Guid.NewGuid().ToString(), Name = "Any" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -24,34 +26,42 @@ public class UpdateUserUseCaseTests
     {
         var currentUser = CreateUserWithPassword("Current", "current@mail.com", "Current@123");
         var otherUser = CreateUserWithPassword("Other", "used@mail.com", "Other@123");
-        var repository = new InMemoryUserRepository([currentUser, otherUser]);
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(currentUser.Id)).ReturnsAsync(currentUser);
+        repository
+            .Setup(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(1);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto { Id = currentUser.Id.ToString(), Email = "used@mail.com" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenChangingPasswordWithoutCurrentPassword()
     {
         var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
-        var repository = new InMemoryUserRepository([user]);
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto { Id = user.Id.ToString(), NewPassword = "NewPass@123" };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenCurrentPasswordIsIncorrect()
     {
         var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
-        var repository = new InMemoryUserRepository([user]);
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto
         {
@@ -61,15 +71,21 @@ public class UpdateUserUseCaseTests
         };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenUpdatedByUserDoesNotExist()
     {
         var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
-        var repository = new InMemoryUserRepository([user]);
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        repository
+            .Setup(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(0);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto
         {
@@ -79,7 +95,7 @@ public class UpdateUserUseCaseTests
         };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.UpdateCalls);
+        repository.Verify(repository => repository.UpdateAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -88,8 +104,16 @@ public class UpdateUserUseCaseTests
         var user = CreateUserWithPassword("User", "user@mail.com", "Current@123");
         var updater = CreateUserWithPassword("Updater", "updater@mail.com", "Updater@123");
         var oldHash = user.PasswordHash;
-        var repository = new InMemoryUserRepository([user, updater]);
-        var useCase = new UpdateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository.Setup(repository => repository.GetByIdAsync(user.Id)).ReturnsAsync(user);
+        repository
+            .SetupSequence(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(0)
+            .ReturnsAsync(1);
+        repository.Setup(repository => repository.UpdateAsync(user)).ReturnsAsync(user);
+        var useCase = new UpdateUserUseCase(repository.Object);
 
         var input = new UpdateUserInputDto
         {
@@ -108,18 +132,15 @@ public class UpdateUserUseCaseTests
         Assert.Equal("Updated Name", output.Name);
         Assert.Equal("updated@mail.com", output.Email);
         Assert.False(output.IsActive);
-        Assert.Equal(1, repository.UpdateCalls);
-
-        var updatedUser = await repository.GetByIdAsync(user.Id);
-        Assert.NotNull(updatedUser);
-        Assert.Equal("Updated Name", updatedUser!.Name);
-        Assert.Equal("updated@mail.com", updatedUser!.Email);
-        Assert.False(updatedUser.IsActive);
-        Assert.Equal(updater.Id, updatedUser.UpdatedById);
-        Assert.NotEqual(oldHash, updatedUser.PasswordHash);
+        repository.Verify(repository => repository.UpdateAsync(user), Times.Once);
+        Assert.Equal("Updated Name", user.Name);
+        Assert.Equal("updated@mail.com", user.Email);
+        Assert.False(user.IsActive);
+        Assert.Equal(updater.Id, user.UpdatedById);
+        Assert.NotEqual(oldHash, user.PasswordHash);
 
         var passwordService = new PasswordService();
-        Assert.True(passwordService.VerifyPassword(updatedUser, "NewPass@123"));
+        Assert.True(passwordService.VerifyPassword(user, "NewPass@123"));
     }
 
     private static UserEntity CreateUserWithPassword(string name, string email, string password)

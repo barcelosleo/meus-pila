@@ -1,5 +1,7 @@
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Houshold.RemoveMember;
+using Moq;
 
 namespace MeusPila.Application.UnitTests.UseCases.Houshold;
 
@@ -10,7 +12,9 @@ public class RemoveMemberUseCaseTests
     {
         var owner = HouseholdTestData.CreateUser("Owner", "HouseholdManager");
         var member = HouseholdTestData.CreateUser("Member");
-        var userRepository = new InMemoryUserRepository([owner, member]);
+        var userRepository = new Mock<IUserRepository>();
+        userRepository.Setup(repository => repository.GetByIdAsync(owner.Id)).ReturnsAsync(owner);
+        userRepository.Setup(repository => repository.GetByIdAsync(member.Id)).ReturnsAsync(member);
         var household = HouseholdTestData.CreateHousehold(owner);
         household.Members.Add(
             new MeusPila.Domain.Entities.HouseholdUser
@@ -22,7 +26,7 @@ public class RemoveMemberUseCaseTests
             }
         );
         var householdRepository = new InMemoryHouseholdRepository([household]);
-        var useCase = new RemoveMemberUseCase(householdRepository, userRepository);
+        var useCase = new RemoveMemberUseCase(householdRepository, userRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new RemoveMemberInputDto
@@ -46,10 +50,9 @@ public class RemoveMemberUseCaseTests
         var member = HouseholdTestData.CreateUser("Member");
         var household = HouseholdTestData.CreateHousehold(owner);
         var householdRepository = new InMemoryHouseholdRepository([household]);
-        var useCase = new RemoveMemberUseCase(
-            householdRepository,
-            new InMemoryUserRepository([owner, requester, member])
-        );
+        var userRepository = new Mock<IUserRepository>();
+        userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
+        var useCase = new RemoveMemberUseCase(householdRepository, userRepository.Object);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             useCase.ExecuteAsync(

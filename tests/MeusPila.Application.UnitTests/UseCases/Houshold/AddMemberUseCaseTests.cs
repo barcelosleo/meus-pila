@@ -1,5 +1,7 @@
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Houshold.AddMember;
+using Moq;
 
 namespace MeusPila.Application.UnitTests.UseCases.Houshold;
 
@@ -12,7 +14,10 @@ public class AddMemberUseCaseTests
         var member = HouseholdTestData.CreateUser("Member");
         var household = HouseholdTestData.CreateHousehold(requester);
         var householdRepository = new InMemoryHouseholdRepository([household]);
-        var useCase = new AddMemberUseCase(householdRepository, new InMemoryUserRepository([requester, member]));
+        var userRepository = new Mock<IUserRepository>();
+        userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
+        userRepository.Setup(repository => repository.GetByIdAsync(member.Id)).ReturnsAsync(member);
+        var useCase = new AddMemberUseCase(householdRepository, userRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new AddMemberInputDto
@@ -35,17 +40,20 @@ public class AddMemberUseCaseTests
     {
         var requester = HouseholdTestData.CreateUser("Requester");
         var household = HouseholdTestData.CreateHousehold(requester);
-        var useCase = new AddMemberUseCase(
-            new InMemoryHouseholdRepository([household]),
-            new InMemoryUserRepository([requester])
-        );
+        var missingMemberId = Guid.NewGuid();
+        var userRepository = new Mock<IUserRepository>();
+        userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
+        userRepository
+            .Setup(repository => repository.GetByIdAsync(missingMemberId))
+            .ReturnsAsync((MeusPila.Domain.Entities.User?)null);
+        var useCase = new AddMemberUseCase(new InMemoryHouseholdRepository([household]), userRepository.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             useCase.ExecuteAsync(
                 new AddMemberInputDto
                 {
                     HouseholdId = household.Id.ToString(),
-                    MemberId = Guid.NewGuid().ToString(),
+                    MemberId = missingMemberId.ToString(),
                     UpdatedById = requester.Id.ToString(),
                 }
             )

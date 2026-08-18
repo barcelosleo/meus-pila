@@ -1,6 +1,7 @@
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.User.CreateUser;
+using Moq;
 using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UnitTests.UseCases.User;
@@ -18,8 +19,13 @@ public class CreateUserUseCaseTests
             IsActive = true,
             Role = "User",
         };
-        var repository = new InMemoryUserRepository([existingUser]);
-        var useCase = new CreateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository
+            .Setup(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(1);
+        var useCase = new CreateUserUseCase(repository.Object);
 
         var input = new CreateUserInputDto
         {
@@ -29,14 +35,20 @@ public class CreateUserUseCaseTests
         };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.AddCalls);
+        repository.Verify(repository => repository.AddAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenCreatedByUserDoesNotExist()
     {
-        var repository = new InMemoryUserRepository();
-        var useCase = new CreateUserUseCase(repository);
+        var repository = new Mock<IUserRepository>();
+        repository
+            .SetupSequence(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(0)
+            .ReturnsAsync(0);
+        var useCase = new CreateUserUseCase(repository.Object);
 
         var input = new CreateUserInputDto
         {
@@ -47,7 +59,7 @@ public class CreateUserUseCaseTests
         };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(input));
-        Assert.Equal(0, repository.AddCalls);
+        repository.Verify(repository => repository.AddAsync(It.IsAny<UserEntity>()), Times.Never);
     }
 
     [Fact]
@@ -61,8 +73,25 @@ public class CreateUserUseCaseTests
             IsActive = true,
             Role = "User",
         };
-        var repository = new InMemoryUserRepository([creator]);
-        var useCase = new CreateUserUseCase(repository);
+        UserEntity? createdUser = null;
+        var repository = new Mock<IUserRepository>();
+        repository
+            .SetupSequence(repository =>
+                repository.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserEntity, bool>>>())
+            )
+            .ReturnsAsync(0)
+            .ReturnsAsync(1);
+        repository
+            .Setup(repository => repository.AddAsync(It.IsAny<UserEntity>()))
+            .Callback<UserEntity>(user => createdUser = user)
+            .ReturnsAsync(
+                (UserEntity user) =>
+                {
+                    user.Id = Guid.NewGuid();
+                    return user;
+                }
+            );
+        var useCase = new CreateUserUseCase(repository.Object);
 
         var input = new CreateUserInputDto
         {
@@ -78,14 +107,13 @@ public class CreateUserUseCaseTests
         Assert.Equal("john.doe@example.com", output.Email);
         Assert.True(Guid.TryParse(output.Id, out var createdId));
 
-        var createdUser = await repository.GetByIdAsync(createdId);
-        Assert.NotNull(createdUser);
-        Assert.Equal("john.doe@example.com", createdUser.Email);
-        Assert.Equal(creator.Id, createdUser.CreatedById);
-        Assert.NotEqual(input.Password, createdUser.PasswordHash);
+        var persistedUser = Assert.IsType<UserEntity>(createdUser);
+        Assert.Equal("john.doe@example.com", persistedUser.Email);
+        Assert.Equal(creator.Id, persistedUser.CreatedById);
+        Assert.NotEqual(input.Password, persistedUser.PasswordHash);
 
         var passwordService = new PasswordService();
-        Assert.True(passwordService.VerifyPassword(createdUser, input.Password));
-        Assert.Equal(1, repository.AddCalls);
+        Assert.True(passwordService.VerifyPassword(persistedUser, input.Password));
+        repository.Verify(repository => repository.AddAsync(persistedUser), Times.Once);
     }
 }

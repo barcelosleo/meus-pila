@@ -8,6 +8,7 @@ internal static class HouseholdTestData
     public static UserEntity CreateUser(string name, string role = "User") =>
         new()
         {
+            Id = Guid.NewGuid(),
             Name = name,
             Email = $"{name.ToLower()}@mail.com",
             PasswordHash = string.Empty,
