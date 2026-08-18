@@ -5,11 +5,11 @@ using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UnitTests.TestDoubles;
 
-internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
+internal sealed class InMemoryHouseholdRepository : IGroupRepository
 {
-    private readonly List<Household> _households;
+    private readonly List<Group> _households;
 
-    public InMemoryHouseholdRepository(IEnumerable<Household>? seed = null)
+    public InMemoryHouseholdRepository(IEnumerable<Group>? seed = null)
     {
         _households = seed?.Select(EnsureId).ToList() ?? [];
     }
@@ -19,19 +19,19 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
     public int AddMemberCalls { get; private set; }
     public int RemoveMemberCalls { get; private set; }
 
-    public Task<Household?> GetByIdAsync(Guid id) =>
+    public Task<Group?> GetByIdAsync(Guid id) =>
         Task.FromResult(_households.FirstOrDefault(household => household.Id == id));
 
-    public Task<IEnumerable<Household>> GetAllAsync() => Task.FromResult(_households.AsEnumerable());
+    public Task<IEnumerable<Group>> GetAllAsync() => Task.FromResult(_households.AsEnumerable());
 
-    public Task<IEnumerable<Household>> GetAllAsync(Expression<Func<Household, bool>> predicate) =>
+    public Task<IEnumerable<Group>> GetAllAsync(Expression<Func<Group, bool>> predicate) =>
         Task.FromResult(_households.AsQueryable().Where(predicate).AsEnumerable());
 
-    public Task<IEnumerable<Household>> GetAllAsync(int pageNumber, int pageSize) =>
+    public Task<IEnumerable<Group>> GetAllAsync(int pageNumber, int pageSize) =>
         Task.FromResult(_households.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
 
-    public Task<IEnumerable<Household>> GetAllAsync(
-        Expression<Func<Household, bool>> predicate,
+    public Task<IEnumerable<Group>> GetAllAsync(
+        Expression<Func<Group, bool>> predicate,
         int pageNumber,
         int pageSize
     ) =>
@@ -39,25 +39,25 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
             _households.AsQueryable().Where(predicate).Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable()
         );
 
-    public Task<Household?> FindAsync(Expression<Func<Household, bool>> predicate) =>
+    public Task<Group?> FindAsync(Expression<Func<Group, bool>> predicate) =>
         Task.FromResult(_households.AsQueryable().FirstOrDefault(predicate));
 
-    public Task<IEnumerable<Household>> FindAllAsync(Expression<Func<Household, bool>> predicate) =>
+    public Task<IEnumerable<Group>> FindAllAsync(Expression<Func<Group, bool>> predicate) =>
         Task.FromResult(_households.AsQueryable().Where(predicate).AsEnumerable());
 
     public Task<int> CountAsync() => Task.FromResult(_households.Count);
 
-    public Task<int> CountAsync(Expression<Func<Household, bool>> predicate) =>
+    public Task<int> CountAsync(Expression<Func<Group, bool>> predicate) =>
         Task.FromResult(_households.AsQueryable().Count(predicate));
 
-    public Task<Household> AddAsync(Household entity)
+    public Task<Group> AddAsync(Group entity)
     {
         AddCalls++;
         _households.Add(EnsureId(entity));
         return Task.FromResult(entity);
     }
 
-    public Task<IEnumerable<Household>> AddAsync(IEnumerable<Household> entities)
+    public Task<IEnumerable<Group>> AddAsync(IEnumerable<Group> entities)
     {
         var list = entities.Select(EnsureId).ToList();
         AddCalls += list.Count;
@@ -65,7 +65,7 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
         return Task.FromResult(list.AsEnumerable());
     }
 
-    public Task<Household> UpdateAsync(Household entity)
+    public Task<Group> UpdateAsync(Group entity)
     {
         UpdateCalls++;
         var index = _households.FindIndex(household => household.Id == entity.Id);
@@ -76,7 +76,7 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
         return Task.FromResult(entity);
     }
 
-    public Task<IEnumerable<Household>> UpdateAsync(IEnumerable<Household> entities)
+    public Task<IEnumerable<Group>> UpdateAsync(IEnumerable<Group> entities)
     {
         var list = entities.ToList();
         foreach (var entity in list)
@@ -91,13 +91,13 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
         return Task.FromResult(list.AsEnumerable());
     }
 
-    public Task DeleteAsync(Household entity)
+    public Task DeleteAsync(Group entity)
     {
         _households.RemoveAll(household => household.Id == entity.Id);
         return Task.CompletedTask;
     }
 
-    public Task DeleteAsync(IEnumerable<Household> entities)
+    public Task DeleteAsync(IEnumerable<Group> entities)
     {
         foreach (var entity in entities)
         {
@@ -106,19 +106,19 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
         return Task.CompletedTask;
     }
 
-    public Task<bool> IsMemberOfHouseholdAsync(Household household, UserEntity user) =>
+    public Task<bool> IsMemberOfGroupAsync(Group household, UserEntity user) =>
         Task.FromResult(household.Members.Any(member => member.UserId == user.Id));
 
-    public Task AddMemberAsync(Household household, UserEntity user)
+    public Task AddMemberAsync(Group household, UserEntity user)
     {
         AddMemberCalls++;
         if (!household.Members.Any(member => member.UserId == user.Id))
         {
             household.Members.Add(
-                new HouseholdUser
+                new GroupUser
                 {
-                    HouseholdId = household.Id,
-                    Household = household,
+                    GroupId = household.Id,
+                    Group = household,
                     UserId = user.Id,
                     User = user,
                 }
@@ -127,17 +127,17 @@ internal sealed class InMemoryHouseholdRepository : IHouseholdRepository
         return Task.CompletedTask;
     }
 
-    public Task RemoveMemberAsync(Household household, UserEntity user)
+    public Task RemoveMemberAsync(Group household, UserEntity user)
     {
         RemoveMemberCalls++;
         household.Members = household.Members.Where(member => member.UserId != user.Id).ToList();
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<UserEntity>> GetMembers(Household household) =>
+    public Task<IEnumerable<UserEntity>> GetMembers(Group household) =>
         Task.FromResult(household.Members.Select(member => member.User).AsEnumerable());
 
-    private static Household EnsureId(Household household)
+    private static Group EnsureId(Group household)
     {
         if (household.Id == Guid.Empty)
         {

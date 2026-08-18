@@ -49,7 +49,7 @@ public class GetUserUseCaseTests
         repository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
         repository.Setup(repository => repository.GetByIdAsync(user.Id)).ReturnsAsync(user);
         repository
-            .Setup(repository => repository.UserCanViewHouseholdMembersAsync(requester.Id, user.Id))
+            .Setup(repository => repository.UserCanViewGroupMembersAsync(requester.Id, user.Id))
             .ReturnsAsync(false);
         var useCase = new GetUserUseCase(repository.Object);
 

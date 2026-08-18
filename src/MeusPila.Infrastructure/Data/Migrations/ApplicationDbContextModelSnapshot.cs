@@ -229,7 +229,7 @@ namespace MeusPila.Infrastructure.Data.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("MeusPila.Domain.Entities.Household", b =>
+            modelBuilder.Entity("MeusPila.Domain.Entities.Group", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,22 +263,22 @@ namespace MeusPila.Infrastructure.Data.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("Households");
+                    b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("MeusPila.Domain.Entities.HouseholdUser", b =>
+            modelBuilder.Entity("MeusPila.Domain.Entities.GroupUser", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("HouseholdId")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("UserId", "HouseholdId");
+                    b.HasKey("UserId", "GroupId");
 
-                    b.HasIndex("HouseholdId");
+                    b.HasIndex("GroupId");
 
-                    b.ToTable("HouseholdUsers");
+                    b.ToTable("GroupUsers");
                 });
 
             modelBuilder.Entity("MeusPila.Domain.Entities.User", b =>
@@ -506,7 +506,7 @@ namespace MeusPila.Infrastructure.Data.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("MeusPila.Domain.Entities.Household", b =>
+            modelBuilder.Entity("MeusPila.Domain.Entities.Group", b =>
                 {
                     b.HasOne("MeusPila.Domain.Entities.User", "CreatedBy")
                         .WithMany()
@@ -529,11 +529,11 @@ namespace MeusPila.Infrastructure.Data.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("MeusPila.Domain.Entities.HouseholdUser", b =>
+            modelBuilder.Entity("MeusPila.Domain.Entities.GroupUser", b =>
                 {
-                    b.HasOne("MeusPila.Domain.Entities.Household", "Household")
-                        .WithMany()
-                        .HasForeignKey("HouseholdId")
+                    b.HasOne("MeusPila.Domain.Entities.Group", "Group")
+                        .WithMany("Members")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -543,7 +543,7 @@ namespace MeusPila.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Household");
+                    b.Navigation("Group");
 
                     b.Navigation("User");
                 });
@@ -566,6 +566,11 @@ namespace MeusPila.Infrastructure.Data.Migrations
             modelBuilder.Entity("MeusPila.Domain.Entities.FinancialAccount", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("MeusPila.Domain.Entities.Group", b =>
+                {
+                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("MeusPila.Domain.Entities.CompositeTransaction", b =>

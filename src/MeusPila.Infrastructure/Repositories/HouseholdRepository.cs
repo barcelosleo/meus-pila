@@ -6,51 +6,51 @@ using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Infrastructure.Repositories;
 
-public class HouseholdRepository : BaseRepository<Household>, IHouseholdRepository
+public class GroupRepository : BaseRepository<Group>, IGroupRepository
 {
-    public HouseholdRepository(ApplicationDbContext dbContext)
+    public GroupRepository(ApplicationDbContext dbContext)
         : base(dbContext) { }
 
-    public async Task<bool> IsMemberOfHouseholdAsync(Household household, UserEntity user)
+    public async Task<bool> IsMemberOfGroupAsync(Group household, UserEntity user)
     {
-        return await _dbContext.HouseholdUsers.AnyAsync(hu => hu.UserId == user.Id && hu.HouseholdId == household.Id);
+        return await _dbContext.GroupUsers.AnyAsync(hu => hu.UserId == user.Id && hu.GroupId == household.Id);
     }
 
-    public async Task AddMemberAsync(Household household, UserEntity user)
+    public async Task AddMemberAsync(Group household, UserEntity user)
     {
-        if (!await IsMemberOfHouseholdAsync(household, user))
+        if (!await IsMemberOfGroupAsync(household, user))
         {
-            HouseholdUser householdUser = new()
+            GroupUser householdUser = new()
             {
-                HouseholdId = household.Id,
-                Household = household,
+                GroupId = household.Id,
+                Group = household,
                 UserId = user.Id,
                 User = user,
             };
 
-            await _dbContext.HouseholdUsers.AddAsync(householdUser);
+            await _dbContext.GroupUsers.AddAsync(householdUser);
             await _dbContext.SaveChangesAsync();
         }
     }
 
-    public async Task RemoveMemberAsync(Household household, UserEntity user)
+    public async Task RemoveMemberAsync(Group household, UserEntity user)
     {
-        if (await IsMemberOfHouseholdAsync(household, user))
+        if (await IsMemberOfGroupAsync(household, user))
         {
-            HouseholdUser? householdUser = await _dbContext.HouseholdUsers.FirstOrDefaultAsync(hu =>
-                hu.UserId == user.Id && hu.HouseholdId == household.Id
+            GroupUser? householdUser = await _dbContext.GroupUsers.FirstOrDefaultAsync(hu =>
+                hu.UserId == user.Id && hu.GroupId == household.Id
             );
 
-            _dbContext.HouseholdUsers.Remove(householdUser!);
+            _dbContext.GroupUsers.Remove(householdUser!);
             await _dbContext.SaveChangesAsync();
         }
     }
 
-    public async Task<IEnumerable<UserEntity>> GetMembers(Household household)
+    public async Task<IEnumerable<UserEntity>> GetMembers(Group household)
     {
-        var members = _dbContext.HouseholdUsers.Where(hu => hu.HouseholdId == household.Id);
+        var members = _dbContext.GroupUsers.Where(hu => hu.GroupId == household.Id);
         var users = await _dbContext
-            .HouseholdUsers.Where(hu => hu.HouseholdId == household.Id)
+            .GroupUsers.Where(hu => hu.GroupId == household.Id)
             .Select(hu => hu.User)
             .ToListAsync();
         return users;

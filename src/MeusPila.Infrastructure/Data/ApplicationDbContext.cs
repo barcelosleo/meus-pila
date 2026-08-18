@@ -6,10 +6,10 @@ namespace MeusPila.Infrastructure.Data;
 public class ApplicationDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
-    public DbSet<Household> Households => Set<Household>();
+    public DbSet<Group> Groups => Set<Group>();
     public DbSet<Bank> Banks => Set<Bank>();
     public DbSet<FinancialCategory> FinancialCategories => Set<FinancialCategory>();
-    public DbSet<HouseholdUser> HouseholdUsers => Set<HouseholdUser>();
+    public DbSet<GroupUser> GroupUsers => Set<GroupUser>();
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<CreditCard> CreditCards => Set<CreditCard>();
     public DbSet<FinancialTransaction> FinancialTransactions => Set<FinancialTransaction>();
@@ -44,6 +44,6 @@ public class ApplicationDbContext : DbContext
             .HasKey(bat => new { bat.FinancialAccountId, bat.FinancialTransactionId });
 
         // Setting the relationship between User and Household through HouseholdUser
-        modelBuilder.Entity<HouseholdUser>().HasKey(hu => new { hu.UserId, hu.HouseholdId });
+        modelBuilder.Entity<GroupUser>().HasKey(hu => new { hu.UserId, hu.GroupId });
     }
 }

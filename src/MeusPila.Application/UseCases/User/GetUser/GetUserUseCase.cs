@@ -42,7 +42,7 @@ public class GetUserUseCase : IGetUserUseCase
 
         if (requester.Role == "HouseholdManager" && requester.Id.ToString() != input.Id)
         {
-            var requesterCanSeeUser = await _userRepository.UserCanViewHouseholdMembersAsync(requesterId, userId);
+            var requesterCanSeeUser = await _userRepository.UserCanViewGroupMembersAsync(requesterId, userId);
             if (!requesterCanSeeUser)
             {
                 throw new UnauthorizedAccessException(

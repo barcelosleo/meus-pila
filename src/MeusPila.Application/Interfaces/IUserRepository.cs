@@ -7,14 +7,14 @@ namespace MeusPila.Application.Interfaces;
 /// </summary>
 public interface IUserRepository : IRepository<User>
 {
-    public Task<bool> IsMemberOfHouseholdAsync(Guid userId, Guid householdId);
-    public Task<bool> IsUserHouseholdManagerAsync(Guid userId, Guid householdId);
-    public Task<bool> UserCanViewHouseholdMembersAsync(Guid requesterId, Guid userId);
-    public Task<IEnumerable<Household>> GetHouseholdsByUserIdAsync(
+    public Task<bool> IsMemberOfGroupAsync(Guid userId, Guid householdId);
+    public Task<bool> IsUserGroupManagerAsync(Guid userId, Guid householdId);
+    public Task<bool> UserCanViewGroupMembersAsync(Guid requesterId, Guid userId);
+    public Task<IEnumerable<Group>> GetGroupsByUserIdAsync(
         Guid userId,
         int pageNumber,
         int pageSize,
         string? searchTerm = null
     );
-    public Task<int> CountHouseholdsByUserIdAsync(Guid userId, string? searchTerm = null);
+    public Task<int> CountGroupsByUserIdAsync(Guid userId, string? searchTerm = null);
 }

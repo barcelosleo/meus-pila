@@ -1,11 +1,11 @@
 using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
-using MeusPila.Application.UseCases.Houshold.AddMember;
-using MeusPila.Application.UseCases.Houshold.CreateHousehold;
-using MeusPila.Application.UseCases.Houshold.GetHousehold;
-using MeusPila.Application.UseCases.Houshold.ListHouseholds;
-using MeusPila.Application.UseCases.Houshold.RemoveMember;
-using MeusPila.Application.UseCases.Houshold.UpdateHousehold;
+using MeusPila.Application.UseCases.Group.AddMember;
+using MeusPila.Application.UseCases.Group.CreateGroup;
+using MeusPila.Application.UseCases.Group.GetGroup;
+using MeusPila.Application.UseCases.Group.ListGroups;
+using MeusPila.Application.UseCases.Group.RemoveMember;
+using MeusPila.Application.UseCases.Group.UpdateGroup;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
 using MeusPila.Application.UseCases.User.CreateUser;
 using MeusPila.Application.UseCases.User.GetUser;
@@ -31,11 +31,11 @@ public static class Startup
         services.AddScoped<IListUsersUseCase, ListUsersUseCase>();
         services.AddScoped<IGetUserUseCase, GetUserUseCase>();
 
-        // Household Use Cases
-        services.AddScoped<ICreateHouseholdUseCase, CreateHouseholdUseCase>();
-        services.AddScoped<IUpdateHouseholdUseCase, UpdateHouseholdUseCase>();
-        services.AddScoped<IListHouseholdsUseCase, ListHouseholdsUseCase>();
-        services.AddScoped<IGetHouseholdUseCase, GetHouseholdUseCase>();
+        // Group Use Cases
+        services.AddScoped<ICreateGroupUseCase, CreateGroupUseCase>();
+        services.AddScoped<IUpdateGroupUseCase, UpdateGroupUseCase>();
+        services.AddScoped<IListGroupsUseCase, ListGroupsUseCase>();
+        services.AddScoped<IGetGroupUseCase, GetGroupUseCase>();
         services.AddScoped<IAddMemberUseCase, AddMemberUseCase>();
         services.AddScoped<IRemoveMemberUseCase, RemoveMemberUseCase>();
 
