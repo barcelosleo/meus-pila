@@ -78,7 +78,7 @@ static async Task<int> CreateUserAsync(string[] args, ServiceProvider servicePro
     Validate(input);
 
     using IServiceScope scope = serviceProvider.CreateScope();
-    var useCase = scope.ServiceProvider.GetRequiredService<IUseCase<CreateUserInputDto, CreateUserOutputDto>>();
+    var useCase = scope.ServiceProvider.GetRequiredService<ICreateUserUseCase>();
     CreateUserOutputDto output = await useCase.ExecuteAsync(input);
 
     Console.WriteLine($"User created: {output.Id}");
@@ -104,7 +104,7 @@ static async Task<int> UpdateUserAsync(string[] args, ServiceProvider servicePro
     Validate(input);
 
     using IServiceScope scope = serviceProvider.CreateScope();
-    var useCase = scope.ServiceProvider.GetRequiredService<IUseCase<UpdateUserInputDto, UpdateUserOutputDto>>();
+    var useCase = scope.ServiceProvider.GetRequiredService<IUpdateUserUseCase>();
     UpdateUserOutputDto output = await useCase.ExecuteAsync(input);
 
     Console.WriteLine($"User updated: {output.Id}");
