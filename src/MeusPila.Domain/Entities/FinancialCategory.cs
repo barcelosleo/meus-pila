@@ -20,7 +20,7 @@ public class FinancialCategory : IEntity
 
     [ForeignKey("ParentCategoryId")]
     public FinancialCategory? ParentCategory { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
 
     [ForeignKey("UpdatedById")]

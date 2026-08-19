@@ -16,7 +16,7 @@ public abstract class FinancialAccount : IEntity, IFinancialAccount
     [ForeignKey("OwnerId")]
     public required User Owner { get; set; }
     public IEnumerable<FinancialTransaction> Transactions { get; set; } = [];
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
 
     [ForeignKey("UpdatedById")]

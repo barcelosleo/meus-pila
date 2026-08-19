@@ -58,9 +58,9 @@ public class GetUserUseCase : IGetUserUseCase
             Email = user.Email,
             Role = user.Role,
             CreatedAt = user.CreatedAt,
-            CreatedById = user.CreatedById?.ToString() ?? "",
+            CreatedById = user.CreatedById?.ToString(),
             UpdatedAt = user.UpdatedAt,
-            UpdatedById = user.UpdatedById?.ToString() ?? "",
+            UpdatedById = user.UpdatedById?.ToString(),
         };
     }
 }

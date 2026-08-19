@@ -29,7 +29,7 @@ public abstract class FinancialTransaction : IEntity
         set => SetValue(value);
     }
     protected decimal _value;
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
 
     [ForeignKey("UpdatedById")]

@@ -25,7 +25,7 @@ public class User : IEntity
 
     [ForeignKey("UpdatedById")]
     public User? UpdatedBy { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? CreatedById { get; set; }
 
     [ForeignKey("CreatedById")]

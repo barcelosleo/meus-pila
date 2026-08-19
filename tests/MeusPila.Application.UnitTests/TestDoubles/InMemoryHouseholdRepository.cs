@@ -91,6 +91,12 @@ internal sealed class InMemoryHouseholdRepository : IGroupRepository
         return Task.FromResult(list.AsEnumerable());
     }
 
+    public Task DeleteAsync(Guid id)
+    {
+        _households.RemoveAll(household => household.Id == id);
+        return Task.CompletedTask;
+    }
+
     public Task DeleteAsync(Group entity)
     {
         _households.RemoveAll(household => household.Id == entity.Id);

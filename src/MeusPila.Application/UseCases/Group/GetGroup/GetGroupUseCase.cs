@@ -33,9 +33,9 @@ public class GetGroupUseCase : IGetGroupUseCase
             Id = group.Id.ToString(),
             Name = group.Name,
             CreatedAt = group.CreatedAt,
-            CreatedById = group.CreatedById?.ToString() ?? "",
+            CreatedById = group.CreatedById?.ToString(),
             UpdatedAt = group.UpdatedAt,
-            UpdatedById = group.UpdatedById?.ToString() ?? "",
+            UpdatedById = group.UpdatedById?.ToString(),
             Members = [.. members.Select(m => new MemberDto { Id = m.Id.ToString(), Name = m.Name })],
         };
     }

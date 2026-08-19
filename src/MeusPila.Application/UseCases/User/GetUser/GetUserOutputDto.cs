@@ -7,7 +7,7 @@ public record GetUserOutputDto
     public required string Email { get; init; }
     public required string Role { get; init; }
     public required DateTime CreatedAt { get; init; }
-    public required string CreatedById { get; init; }
-    public required DateTime UpdatedAt { get; init; }
-    public required string UpdatedById { get; init; }
+    public string? CreatedById { get; init; }
+    public DateTime? UpdatedAt { get; init; }
+    public string? UpdatedById { get; init; }
 }

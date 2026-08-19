@@ -8,11 +8,11 @@ public record MemberDto
 
 public record RemoveMemberOutputDto
 {
-    public required string Id = string.Empty;
-    public required string Name = string.Empty;
+    public required string Id;
+    public required string Name;
     public required DateTime CreatedAt;
-    public required string CreatedById;
-    public required DateTime UpdatedAt;
-    public required string UpdatedById;
+    public string? CreatedById;
+    public DateTime? UpdatedAt;
+    public string? UpdatedById;
     public required List<MemberDto> Members;
 }

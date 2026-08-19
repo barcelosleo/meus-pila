@@ -15,7 +15,7 @@ public class Bank : IEntity
 
     [StringLength(20)]
     public required string Code { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
 
     [ForeignKey("UpdatedById")]

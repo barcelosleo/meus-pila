@@ -10,7 +10,7 @@ public record AddMemberOutputDto
 {
     public required string GroupId = string.Empty;
     public required string Name = string.Empty;
-    public required DateTime UpdatedAt;
-    public required string UpdatedById;
+    public DateTime? UpdatedAt;
+    public string? UpdatedById;
     public required List<MemberDto> Members;
 }

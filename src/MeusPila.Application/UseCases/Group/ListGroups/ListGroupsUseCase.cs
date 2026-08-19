@@ -63,7 +63,9 @@ public class ListGroupsUseCase : IListGroupsUseCase
                 Id = h.Id,
                 Name = h.Name,
                 CreatedAt = h.CreatedAt,
+                CreatedById = h.CreatedById?.ToString(),
                 UpdatedAt = h.UpdatedAt,
+                UpdatedById = h.UpdatedById?.ToString(),
             }),
         };
     }

@@ -16,7 +16,7 @@ public class Group : IEntity
 
     [ForeignKey("OwnerId")]
     public required User Owner { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
 
     [ForeignKey("UpdatedById")]

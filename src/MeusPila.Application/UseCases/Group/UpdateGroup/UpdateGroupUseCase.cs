@@ -56,8 +56,8 @@ public class UpdateGroupUseCase : IUpdateGroupUseCase
             Id = updatedGroup.Id.ToString(),
             Name = updatedGroup.Name,
             OwnerId = updatedGroup.OwnerId.ToString(),
-            UpdatedById = updatedGroup.UpdatedById?.ToString() ?? "",
-            UpdateAt = updatedGroup.UpdatedAt,
+            UpdatedById = updatedGroup.UpdatedById?.ToString(),
+            UpdatedAt = updatedGroup.UpdatedAt,
         };
     }
 }

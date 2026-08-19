@@ -55,7 +55,7 @@ public class AddMemberUseCase : IAddMemberUseCase
         {
             GroupId = updatedHousehold.Id.ToString(),
             Name = updatedHousehold.Name,
-            UpdatedById = updatedHousehold.UpdatedById?.ToString() ?? "",
+            UpdatedById = updatedHousehold.UpdatedById?.ToString(),
             UpdatedAt = updatedHousehold.UpdatedAt,
             Members = [.. members.Select(m => new MemberDto { Id = m.Id.ToString(), Name = m.Name })],
         };

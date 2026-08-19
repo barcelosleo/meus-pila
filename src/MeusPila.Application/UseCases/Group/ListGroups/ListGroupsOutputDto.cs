@@ -5,7 +5,9 @@ public record GroupDto
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
-    public DateTime UpdatedAt { get; init; }
+    public string? CreatedById { get; init; }
+    public DateTime? UpdatedAt { get; init; }
+    public string? UpdatedById { get; init; }
 }
 
 public record ListGroupsOutputDto
