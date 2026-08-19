@@ -22,16 +22,16 @@ public static class QueryOrderingMapper<TEntity, TOrdering>
         foreach (var ordering in orderings)
         {
             string property = ordering.ToString() ?? "CreatedAt";
-            property = property
+            string propertyName = property
                 .Replace("Asc", "", StringComparison.OrdinalIgnoreCase)
                 .Replace("Desc", "", StringComparison.OrdinalIgnoreCase);
 
             bool descending = property.EndsWith("Desc", StringComparison.OrdinalIgnoreCase);
 
-            if (typeof(TEntity).GetProperty(property) != null)
+            if (typeof(TEntity).GetProperty(propertyName) != null)
             {
                 queryOrderings.Add(
-                    new QueryOrdering<TEntity> { OrderingPropertyName = property, Descending = descending }
+                    new QueryOrdering<TEntity> { OrderingPropertyName = propertyName, Descending = descending }
                 );
             }
         }

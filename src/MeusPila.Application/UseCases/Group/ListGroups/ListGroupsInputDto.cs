@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using MeusPila.Domain.Common;
 
 namespace MeusPila.Application.UseCases.Group.ListGroups;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum GroupsOrdering
 {
     IdAsc,
@@ -20,7 +22,7 @@ public record ListGroupsInputDto
 {
     public required string RequesterUserId { get; init; }
     public string? SearchTerm { get; init; }
-    public IEnumerable<GroupsOrdering>? Ordering { get; init; } = [GroupsOrdering.CreatedAtDesc];
+    public IEnumerable<GroupsOrdering>? Ordering { get; init; }
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = PagedListProperties.DefaultPageSize;
 }
@@ -28,7 +30,7 @@ public record ListGroupsInputDto
 public record ListGroupsQueryDto
 {
     public string? SearchTerm { get; init; }
-    public IEnumerable<GroupsOrdering>? Ordering { get; init; } = [GroupsOrdering.CreatedAtDesc];
+    public IEnumerable<GroupsOrdering>? Ordering { get; init; }
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = PagedListProperties.DefaultPageSize;
 }

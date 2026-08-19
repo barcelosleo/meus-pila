@@ -32,9 +32,9 @@ public class ListGroupsUseCase : IListGroupsUseCase
         string? searchTerm = input.SearchTerm?.Trim();
         string? normalizedSearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.ToLower();
 
-        IEnumerable<IQueryOrdering>? ordering = QueryOrderingMapper<GroupEntity, GroupsOrdering>.MapQueryOrderings(
-            input.Ordering
-        );
+        IEnumerable<GroupsOrdering> inputOrdering = input.Ordering ?? [GroupsOrdering.CreatedAtDesc];
+
+        var ordering = QueryOrderingMapper<GroupEntity, GroupsOrdering>.MapQueryOrderings(inputOrdering);
 
         IEnumerable<GroupEntity> groups;
         int groupCount;

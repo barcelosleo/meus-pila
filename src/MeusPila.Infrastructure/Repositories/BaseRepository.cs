@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using MeusPila.Application.Interfaces;
 using MeusPila.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,28 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         _dbSet = _dbContext.Set<TEntity>();
     }
 
+    protected IQueryable<TEntity> ApplyOrdering(
+        IQueryable<TEntity> query,
+        PropertyInfo propertyInfo,
+        bool descending,
+        bool isFirst
+    )
+    {
+        var parameter = Expression.Parameter(typeof(TEntity), "e");
+        var propertyAccess = Expression.Property(parameter, propertyInfo);
+        var lambda = Expression.Lambda(propertyAccess, parameter);
+
+        string methodName = isFirst
+            ? (descending ? nameof(Queryable.OrderByDescending) : nameof(Queryable.OrderBy))
+            : (descending ? nameof(Queryable.ThenByDescending) : nameof(Queryable.ThenBy));
+
+        var method = typeof(Queryable)
+            .GetMethods()
+            .First(m => m.Name == methodName && m.GetParameters().Length == 2)
+            .MakeGenericMethod(typeof(TEntity), propertyInfo.PropertyType);
+        return (IQueryable<TEntity>)method.Invoke(null, [query, lambda])!;
+    }
+
     public Task<TEntity?> GetByIdAsync(Guid id)
     {
         return _dbSet.FindAsync(id).AsTask();
@@ -29,22 +52,18 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<IQueryOrdering> orderings)
     {
-        if (orderings.Any())
+        IQueryable<TEntity> query = _dbSet;
+        bool isFirst = true;
+        foreach (var ordering in orderings)
         {
-            IQueryable<TEntity> query = _dbSet;
-            foreach (var ordering in orderings)
+            var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
+            if (propertyInfo != null)
             {
-                var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
-                if (propertyInfo != null)
-                {
-                    query = ordering.Descending
-                        ? query.OrderByDescending(e => propertyInfo.GetValue(e, null))
-                        : query.OrderBy(e => propertyInfo.GetValue(e, null));
-                }
+                query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
+                isFirst = false;
             }
-            return Task.FromResult(query.AsEnumerable());
         }
-        return Task.FromResult(_dbSet.AsEnumerable());
+        return Task.FromResult(query.AsEnumerable());
     }
 
     public Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
@@ -58,17 +77,14 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
     )
     {
         IQueryable<TEntity> query = _dbSet.Where(predicate);
-        if (orderings.Any())
+        bool isFirst = true;
+        foreach (var ordering in orderings)
         {
-            foreach (var ordering in orderings)
+            var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
+            if (propertyInfo != null)
             {
-                var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
-                if (propertyInfo != null)
-                {
-                    query = ordering.Descending
-                        ? query.OrderByDescending(e => propertyInfo.GetValue(e, null))
-                        : query.OrderBy(e => propertyInfo.GetValue(e, null));
-                }
+                query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
+                isFirst = false;
             }
         }
         return Task.FromResult(query.AsEnumerable());
@@ -83,17 +99,14 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
     public Task<IEnumerable<TEntity>> GetAllAsync(int pageNumber, int pageSize, IEnumerable<IQueryOrdering> orderings)
     {
         IQueryable<TEntity> query = _dbSet;
-        if (orderings.Any())
+        bool isFirst = true;
+        foreach (var ordering in orderings)
         {
-            foreach (var ordering in orderings)
+            var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
+            if (propertyInfo != null)
             {
-                var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
-                if (propertyInfo != null)
-                {
-                    query = ordering.Descending
-                        ? query.OrderByDescending(e => propertyInfo.GetValue(e, null))
-                        : query.OrderBy(e => propertyInfo.GetValue(e, null));
-                }
+                query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
+                isFirst = false;
             }
         }
         return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
@@ -117,18 +130,16 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
     )
     {
         IQueryable<TEntity> query = _dbSet.Where(predicate);
-        if (orderings.Any())
+
+        bool isFirst = true;
+        foreach (var ordering in orderings)
         {
-            foreach (var ordering in orderings)
-            {
-                var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
-                if (propertyInfo != null)
-                {
-                    query = ordering.Descending
-                        ? query.OrderByDescending(e => propertyInfo.GetValue(e, null))
-                        : query.OrderBy(e => propertyInfo.GetValue(e, null));
-                }
-            }
+            var propertyInfo = typeof(TEntity).GetProperty(ordering.OrderingPropertyName);
+            if (propertyInfo == null)
+                continue;
+
+            query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
+            isFirst = false;
         }
         return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
     }
