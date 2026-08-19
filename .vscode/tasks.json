@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/MeusPila.slnx"
+                "${workspaceFolder}/src/MeusPila.Api/MeusPila.Api.csproj"
             ],
             "problemMatcher": "$msCompile"
         },
