@@ -99,7 +99,7 @@ public class GroupController : ControllerBase
             var input = new CreateGroupInputDto
             {
                 Name = query.Name,
-                OwnerId = query.OwnerId,
+                OwnerId = requesterUserId!,
                 CreatedById = requesterUserId!,
             };
             var result = await _createGroupUseCase.ExecuteAsync(input);

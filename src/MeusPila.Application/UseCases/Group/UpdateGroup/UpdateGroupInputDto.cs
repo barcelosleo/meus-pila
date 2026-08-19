@@ -6,13 +6,13 @@ public record UpdateGroupInputDto
 {
     public required string Id;
 
-    public string? Name = string.Empty;
+    public string? Name;
 
-    public string? UpdatedById = string.Empty;
+    public string? UpdatedById;
 }
 
 public record UpdateGroupQueryDto
 {
     [StringLength(100, ErrorMessage = "O nome do grupo deve ter no máximo 100 caracteres")]
-    public string? Name = string.Empty;
+    public string? Name { get; init; }
 }
