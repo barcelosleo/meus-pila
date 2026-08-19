@@ -12,7 +12,7 @@ public interface IRepository<TEntity>
     /// <summary>
     /// Gets an entity by its unique identifier asynchronously.
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">The unique identifier of the entity.</param>
     /// <returns>The entity with the specified identifier. Null if not found.</returns>
     public Task<TEntity?> GetByIdAsync(Guid id);
 
@@ -23,31 +23,73 @@ public interface IRepository<TEntity>
     public Task<IEnumerable<TEntity>> GetAllAsync();
 
     /// <summary>
+    /// Gets all entities asynchronously.
+    /// </summary>
+    /// <param name="orderings">The ordering criteria for the query.</param>
+    /// <returns>A list of all entities.</returns>
+    public Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<IQueryOrdering> orderings);
+
+    /// <summary>
     /// Gets all entities that match the specified predicate asynchronously.
     /// </summary>
-    /// <param name="predicate"></param>
+    /// <param name="predicate">The predicate to filter entities.</param>
     /// <returns>A list of entities that match the specified predicate.</returns>
     public Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
+    /// Gets all entities that match the specified predicate asynchronously.
+    /// </summary>
+    /// <param name="predicate">The predicate to filter entities.</param>
+    /// <param name="orderings">The ordering criteria for the query.</param>
+    /// <returns>A list of entities that match the specified predicate.</returns>
+    public Task<IEnumerable<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        IEnumerable<IQueryOrdering> orderings
+    );
+
+    /// <summary>
     /// Gets a paginated list of all entities asynchronously.
     /// </summary>
-    /// <param name="pageNumber"></param>
-    /// <param name="pageSize"></param>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of entities per page.</param>
     /// <returns>A paginated list of all entities.</returns>
     public Task<IEnumerable<TEntity>> GetAllAsync(int pageNumber, int pageSize);
 
     /// <summary>
+    /// Gets a paginated list of all entities asynchronously.
+    /// </summary>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of entities per page.</param>
+    /// <param name="orderings">The ordering criteria for the query.</param>
+    /// <returns>A paginated list of all entities.</returns>
+    public Task<IEnumerable<TEntity>> GetAllAsync(int pageNumber, int pageSize, IEnumerable<IQueryOrdering> orderings);
+
+    /// <summary>
     /// Gets a paginated list of all entities that match the specified predicate asynchronously.
     /// </summary>
-    /// <param name="predicate"></param>
-    /// <param name="pageNumber"></param>
-    /// <param name="pageSize"></param>
+    /// <param name="predicate">The predicate to filter entities.</param>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of entities per page.</param>
     /// <returns>A paginated list of entities that match the specified predicate.</returns>
     public Task<IEnumerable<TEntity>> GetAllAsync(
         Expression<Func<TEntity, bool>> predicate,
         int pageNumber,
         int pageSize
+    );
+
+    /// <summary>
+    /// Gets a paginated list of all entities that match the specified predicate asynchronously.
+    /// </summary>
+    /// <param name="predicate">The predicate to filter entities.</param>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of entities per page.</param>
+    /// <param name="orderings">The ordering criteria for the query.</param>
+    /// <returns>A paginated list of entities that match the specified predicate.</returns>
+    public Task<IEnumerable<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        int pageNumber,
+        int pageSize,
+        IEnumerable<IQueryOrdering> orderings
     );
 
     /// <summary>

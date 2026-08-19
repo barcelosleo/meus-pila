@@ -1,5 +1,6 @@
-using MeusPila.Application.UnitTests.TestDoubles;
+using MeusPila.Application.Interfaces;
 using MeusPila.Application.UseCases.Group.GetGroup;
+using Moq;
 
 namespace MeusPila.Application.UnitTests.UseCases.Group;
 
@@ -11,16 +12,12 @@ public class GetGroupUseCaseTests
         var owner = GroupTestData.CreateUser("Owner");
         var member = GroupTestData.CreateUser("Member");
         var household = GroupTestData.CreateGroup(owner);
-        household.Members.Add(
-            new MeusPila.Domain.Entities.GroupUser
-            {
-                GroupId = household.Id,
-                Group = household,
-                UserId = member.Id,
-                User = member,
-            }
-        );
-        var useCase = new GetGroupUseCase(new InMemoryHouseholdRepository([household]));
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
+        groupRepository
+            .Setup(repository => repository.GetMembers(household))
+            .ReturnsAsync(new[] { member }.AsEnumerable());
+        var useCase = new GetGroupUseCase(groupRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new GetGroupInputDto { GroupId = household.Id.ToString(), RequesterId = owner.Id.ToString() }
@@ -34,7 +31,11 @@ public class GetGroupUseCaseTests
     [Fact]
     public async Task ExecuteAsync_ShouldThrow_WhenHouseholdDoesNotExist()
     {
-        var useCase = new GetGroupUseCase(new InMemoryHouseholdRepository());
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository
+            .Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((MeusPila.Domain.Entities.Group?)null);
+        var useCase = new GetGroupUseCase(groupRepository.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             useCase.ExecuteAsync(

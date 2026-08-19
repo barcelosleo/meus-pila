@@ -1,5 +1,4 @@
 using MeusPila.Application.Interfaces;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Group.CreateGroup;
 using Moq;
 
@@ -11,10 +10,13 @@ public class CreateGroupUseCaseTests
     public async Task ExecuteAsync_ShouldPromoteOwnerAndCreateGroup()
     {
         var owner = GroupTestData.CreateUser("Owner");
-        var repository = new InMemoryHouseholdRepository();
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository
+            .Setup(repository => repository.AddAsync(It.IsAny<MeusPila.Domain.Entities.Group>()))
+            .ReturnsAsync((MeusPila.Domain.Entities.Group group) => group);
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(owner.Id)).ReturnsAsync(owner);
-        var useCase = new CreateGroupUseCase(userRepository.Object, repository);
+        var useCase = new CreateGroupUseCase(userRepository.Object, groupRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new CreateGroupInputDto
@@ -28,7 +30,10 @@ public class CreateGroupUseCaseTests
         Assert.Equal("Family", output.Name);
         Assert.Equal(owner.Id.ToString(), output.OwnerId);
         Assert.Equal("GroupManager", owner.Role);
-        Assert.Equal(1, repository.AddCalls);
+        groupRepository.Verify(
+            repository => repository.AddAsync(It.IsAny<MeusPila.Domain.Entities.Group>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -38,7 +43,7 @@ public class CreateGroupUseCaseTests
         userRepository
             .Setup(repository => repository.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync((MeusPila.Domain.Entities.User?)null);
-        var useCase = new CreateGroupUseCase(userRepository.Object, new InMemoryHouseholdRepository());
+        var useCase = new CreateGroupUseCase(userRepository.Object, new Mock<IGroupRepository>().Object);
 
         var createdById = Guid.NewGuid().ToString();
 

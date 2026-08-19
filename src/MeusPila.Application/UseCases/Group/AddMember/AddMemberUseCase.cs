@@ -42,7 +42,7 @@ public class AddMemberUseCase : IAddMemberUseCase
             throw new ArgumentException($"O usuário com ID {input.MemberId} não foi encontrado.");
         }
 
-        group.UpdatedAt = DateTime.Now;
+        group.UpdatedAt = DateTime.UtcNow;
         group.UpdatedBy = requester;
         group.UpdatedById = requester.Id;
 

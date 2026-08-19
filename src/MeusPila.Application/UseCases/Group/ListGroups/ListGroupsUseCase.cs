@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using MeusPila.Application.Interfaces;
+using MeusPila.Application.Services;
 using MeusPila.Domain.Entities;
 using GroupEntity = MeusPila.Domain.Entities.Group;
 using UserEntity = MeusPila.Domain.Entities.User;
@@ -31,6 +32,10 @@ public class ListGroupsUseCase : IListGroupsUseCase
         string? searchTerm = input.SearchTerm?.Trim();
         string? normalizedSearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.ToLower();
 
+        IEnumerable<IQueryOrdering>? ordering = QueryOrderingMapper<GroupEntity, GroupsOrdering>.MapQueryOrderings(
+            input.Ordering
+        );
+
         IEnumerable<GroupEntity> groups;
         int groupCount;
 
@@ -38,7 +43,7 @@ public class ListGroupsUseCase : IListGroupsUseCase
         {
             Expression<Func<GroupEntity, bool>>? filter = h =>
                 normalizedSearchTerm == null || h.Name.ToLower().Contains(normalizedSearchTerm);
-            groups = await _groupRepository.GetAllAsync(filter, input.PageNumber, input.PageSize);
+            groups = await _groupRepository.GetAllAsync(filter, input.PageNumber, input.PageSize, ordering);
             groupCount = await _groupRepository.CountAsync(filter);
         }
         else

@@ -22,6 +22,7 @@ internal static class GroupTestData
     public static GroupEntity CreateGroup(UserEntity owner, string name = "Home") =>
         new()
         {
+            Id = Guid.NewGuid(),
             Name = name,
             OwnerId = owner.Id,
             Owner = owner,

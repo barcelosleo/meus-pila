@@ -1,5 +1,4 @@
 using MeusPila.Application.Interfaces;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Group.AddMember;
 using Moq;
 
@@ -13,11 +12,18 @@ public class AddMemberUseCaseTests
         var requester = GroupTestData.CreateUser("Requester", "GroupManager");
         var member = GroupTestData.CreateUser("Member");
         var household = GroupTestData.CreateGroup(requester);
-        var householdRepository = new InMemoryHouseholdRepository([household]);
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
+        groupRepository
+            .Setup(repository => repository.UpdateAsync(household))
+            .ReturnsAsync((MeusPila.Domain.Entities.Group group) => group);
+        groupRepository
+            .Setup(repository => repository.GetMembers(household))
+            .ReturnsAsync(new[] { member }.AsEnumerable());
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
         userRepository.Setup(repository => repository.GetByIdAsync(member.Id)).ReturnsAsync(member);
-        var useCase = new AddMemberUseCase(householdRepository, userRepository.Object);
+        var useCase = new AddMemberUseCase(groupRepository.Object, userRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new AddMemberInputDto
@@ -31,8 +37,8 @@ public class AddMemberUseCaseTests
         Assert.Equal(household.Id.ToString(), output.GroupId);
         Assert.Single(output.Members);
         Assert.Equal(member.Id.ToString(), output.Members[0].Id);
-        Assert.Equal(1, householdRepository.AddMemberCalls);
-        Assert.Equal(1, householdRepository.UpdateCalls);
+        groupRepository.Verify(repository => repository.AddMemberAsync(household, member), Times.Once);
+        groupRepository.Verify(repository => repository.UpdateAsync(household), Times.Once);
     }
 
     [Fact]
@@ -41,12 +47,14 @@ public class AddMemberUseCaseTests
         var requester = GroupTestData.CreateUser("Requester");
         var household = GroupTestData.CreateGroup(requester);
         var missingMemberId = Guid.NewGuid();
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
         userRepository
             .Setup(repository => repository.GetByIdAsync(missingMemberId))
             .ReturnsAsync((MeusPila.Domain.Entities.User?)null);
-        var useCase = new AddMemberUseCase(new InMemoryHouseholdRepository([household]), userRepository.Object);
+        var useCase = new AddMemberUseCase(groupRepository.Object, userRepository.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             useCase.ExecuteAsync(

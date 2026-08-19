@@ -77,6 +77,7 @@ public class GroupController : ControllerBase
                 SearchTerm = query.SearchTerm,
                 PageNumber = query.PageNumber,
                 PageSize = query.PageSize,
+                Ordering = query.Ordering,
             };
 
             var result = await _listGroupsUseCase.ExecuteAsync(input);

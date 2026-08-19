@@ -30,3 +30,6 @@ app.UseAuthorization();
 app.MapControllers().RequireCors(corsPolicy);
 
 app.Run();
+
+// Exposed so MeusPila.IntegrationTests can host the API via WebApplicationFactory<Program>.
+public partial class Program { }

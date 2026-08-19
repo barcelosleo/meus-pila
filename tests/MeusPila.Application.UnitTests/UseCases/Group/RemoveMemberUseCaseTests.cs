@@ -1,5 +1,4 @@
 using MeusPila.Application.Interfaces;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Group.RemoveMember;
 using Moq;
 
@@ -12,21 +11,19 @@ public class RemoveMemberUseCaseTests
     {
         var owner = GroupTestData.CreateUser("Owner", "GroupManager");
         var member = GroupTestData.CreateUser("Member");
+        var household = GroupTestData.CreateGroup(owner);
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
+        groupRepository
+            .Setup(repository => repository.UpdateAsync(household))
+            .ReturnsAsync((MeusPila.Domain.Entities.Group group) => group);
+        groupRepository
+            .Setup(repository => repository.GetMembers(household))
+            .ReturnsAsync(Enumerable.Empty<MeusPila.Domain.Entities.User>());
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(owner.Id)).ReturnsAsync(owner);
         userRepository.Setup(repository => repository.GetByIdAsync(member.Id)).ReturnsAsync(member);
-        var household = GroupTestData.CreateGroup(owner);
-        household.Members.Add(
-            new MeusPila.Domain.Entities.GroupUser
-            {
-                GroupId = household.Id,
-                Group = household,
-                UserId = member.Id,
-                User = member,
-            }
-        );
-        var householdRepository = new InMemoryHouseholdRepository([household]);
-        var useCase = new RemoveMemberUseCase(householdRepository, userRepository.Object);
+        var useCase = new RemoveMemberUseCase(groupRepository.Object, userRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new RemoveMemberInputDto
@@ -38,8 +35,8 @@ public class RemoveMemberUseCaseTests
         );
 
         Assert.Empty(output.Members);
-        Assert.Equal(1, householdRepository.RemoveMemberCalls);
-        Assert.Equal(1, householdRepository.UpdateCalls);
+        groupRepository.Verify(repository => repository.RemoveMemberAsync(household, member), Times.Once);
+        groupRepository.Verify(repository => repository.UpdateAsync(household), Times.Once);
     }
 
     [Fact]
@@ -49,10 +46,11 @@ public class RemoveMemberUseCaseTests
         var requester = GroupTestData.CreateUser("Requester");
         var member = GroupTestData.CreateUser("Member");
         var household = GroupTestData.CreateGroup(owner);
-        var householdRepository = new InMemoryHouseholdRepository([household]);
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(requester.Id)).ReturnsAsync(requester);
-        var useCase = new RemoveMemberUseCase(householdRepository, userRepository.Object);
+        var useCase = new RemoveMemberUseCase(groupRepository.Object, userRepository.Object);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             useCase.ExecuteAsync(
@@ -64,6 +62,13 @@ public class RemoveMemberUseCaseTests
                 }
             )
         );
-        Assert.Equal(0, householdRepository.RemoveMemberCalls);
+        groupRepository.Verify(
+            repository =>
+                repository.RemoveMemberAsync(
+                    It.IsAny<MeusPila.Domain.Entities.Group>(),
+                    It.IsAny<MeusPila.Domain.Entities.User>()
+                ),
+            Times.Never
+        );
     }
 }

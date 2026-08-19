@@ -1,5 +1,4 @@
 using MeusPila.Application.Interfaces;
-using MeusPila.Application.UnitTests.TestDoubles;
 using MeusPila.Application.UseCases.Group.UpdateGroup;
 using Moq;
 
@@ -13,10 +12,14 @@ public class UpdateGroupUseCaseTests
         var owner = GroupTestData.CreateUser("Owner");
         var updater = GroupTestData.CreateUser("Updater");
         var household = GroupTestData.CreateGroup(owner);
-        var householdRepository = new InMemoryHouseholdRepository([household]);
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
+        groupRepository
+            .Setup(repository => repository.UpdateAsync(household))
+            .ReturnsAsync((MeusPila.Domain.Entities.Group group) => group);
         var userRepository = new Mock<IUserRepository>();
         userRepository.Setup(repository => repository.GetByIdAsync(updater.Id)).ReturnsAsync(updater);
-        var useCase = new UpdateGroupUseCase(householdRepository, userRepository.Object);
+        var useCase = new UpdateGroupUseCase(groupRepository.Object, userRepository.Object);
 
         var output = await useCase.ExecuteAsync(
             new UpdateGroupInputDto
@@ -29,7 +32,7 @@ public class UpdateGroupUseCaseTests
 
         Assert.Equal("Updated Home", output.Name);
         Assert.Equal(updater.Id.ToString(), output.UpdatedById);
-        Assert.Equal(1, householdRepository.UpdateCalls);
+        groupRepository.Verify(repository => repository.UpdateAsync(household), Times.Once);
     }
 
     [Fact]
@@ -38,11 +41,13 @@ public class UpdateGroupUseCaseTests
         var owner = GroupTestData.CreateUser("Owner");
         var household = GroupTestData.CreateGroup(owner);
         var missingUpdaterId = Guid.NewGuid();
+        var groupRepository = new Mock<IGroupRepository>();
+        groupRepository.Setup(repository => repository.GetByIdAsync(household.Id)).ReturnsAsync(household);
         var userRepository = new Mock<IUserRepository>();
         userRepository
             .Setup(repository => repository.GetByIdAsync(missingUpdaterId))
             .ReturnsAsync((MeusPila.Domain.Entities.User?)null);
-        var useCase = new UpdateGroupUseCase(new InMemoryHouseholdRepository([household]), userRepository.Object);
+        var useCase = new UpdateGroupUseCase(groupRepository.Object, userRepository.Object);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             useCase.ExecuteAsync(
