@@ -23,6 +23,20 @@ public class UpdateUserUseCase : IUpdateUserUseCase
             throw new InvalidOperationException("Usuário não encontrado.");
         }
 
+        var updaterId = Guid.Parse(input.UpdatedById);
+        UserEntity? updater = await _userRepository.GetByIdAsync(updaterId);
+        if (updater == null)
+        {
+            throw new InvalidOperationException("O usuário que está atualizando o usuário não existe.");
+        }
+
+        if (updater.Role != "Admin" && updater.Id != user.Id)
+        {
+            throw new InvalidOperationException("Apenas administradores podem atualizar outros usuários.");
+        }
+
+        user.UpdatedById = updaterId;
+
         if (!string.IsNullOrEmpty(input.Name))
         {
             user.Name = input.Name;
@@ -58,17 +72,6 @@ public class UpdateUserUseCase : IUpdateUserUseCase
         if (input.IsActive.HasValue)
         {
             user.IsActive = input.IsActive.Value;
-        }
-
-        if (!string.IsNullOrEmpty(input.UpdatedById))
-        {
-            var updaterId = Guid.Parse(input.UpdatedById);
-            bool updater = await _userRepository.CountAsync(u => u.Id == updaterId) > 0;
-            if (!updater)
-            {
-                throw new InvalidOperationException("O usuário que está atualizando o usuário não existe.");
-            }
-            user.UpdatedById = updaterId;
         }
 
         user.UpdatedAt = DateTime.UtcNow;

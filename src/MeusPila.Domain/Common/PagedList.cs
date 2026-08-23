@@ -1,3 +1,5 @@
+using MeusPila.Domain.Interfaces;
+
 namespace MeusPila.Domain.Common;
 
 public static class PagedListProperties
@@ -6,7 +8,7 @@ public static class PagedListProperties
     public const int MaxPageSize = 50;
 }
 
-public class PagedList<T>
+public class PagedList<T> : IPagedList<T>
     where T : class
 {
     public int PageNumber { get; init; }

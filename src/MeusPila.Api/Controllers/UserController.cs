@@ -1,10 +1,11 @@
 using System.Security.Claims;
+using MeusPila.Application.UseCases.Admin.CreateUser;
+using MeusPila.Application.UseCases.Admin.ListUsers;
 using MeusPila.Application.UseCases.User.AuthenticateUser;
-using MeusPila.Application.UseCases.User.CreateUser;
 using MeusPila.Application.UseCases.User.GetUser;
-using MeusPila.Application.UseCases.User.ListUsers;
 using MeusPila.Application.UseCases.User.RefreshToken;
 using MeusPila.Application.UseCases.User.RemoveUser;
+using MeusPila.Application.UseCases.User.UpdateUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,8 @@ public class UserController : ControllerBase
     private readonly IGetUserUseCase _getUserUseCase;
     private readonly IRemoveUserUseCase _removeUserUseCase;
 
+    private readonly IUpdateUserUseCase _updateUserUseCase;
+
     public UserController(
         ILogger<UserController> logger,
         IAuthenticateUserUseCase authenticateUserUseCase,
@@ -29,7 +32,8 @@ public class UserController : ControllerBase
         IRefreshTokenUseCase refreshTokenUseCase,
         IListUsersUseCase listUsersUseCase,
         IGetUserUseCase getUserUseCase,
-        IRemoveUserUseCase removeUserUseCase
+        IRemoveUserUseCase removeUserUseCase,
+        IUpdateUserUseCase updateUserUseCase
     )
     {
         _logger = logger;
@@ -39,6 +43,7 @@ public class UserController : ControllerBase
         _listUsersUseCase = listUsersUseCase;
         _getUserUseCase = getUserUseCase;
         _removeUserUseCase = removeUserUseCase;
+        _updateUserUseCase = updateUserUseCase;
     }
 
     [HttpPost("authenticate")]
@@ -158,6 +163,37 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error removing user.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [HttpPatch("{id}")]
+    [Authorize]
+    public async Task<ActionResult<UpdateUserOutputDto>> UpdateUser(
+        [FromRoute] string id,
+        [FromBody] UpdateUserQueryDto input
+    )
+    {
+        string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try
+        {
+            var inputDto = new UpdateUserInputDto
+            {
+                Id = id,
+                Name = input.Name,
+                Email = input.Email,
+                CurrentPassword = input.CurrentPassword,
+                NewPassword = input.NewPassword,
+                IsActive = input.IsActive,
+                UpdatedById = requesterId!,
+            };
+            var output = await _updateUserUseCase.ExecuteAsync(inputDto);
+            return Ok(output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user.");
             return BadRequest(new { message = ex.Message });
         }
     }

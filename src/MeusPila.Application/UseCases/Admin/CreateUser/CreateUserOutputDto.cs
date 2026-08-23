@@ -1,4 +1,4 @@
-namespace MeusPila.Application.UseCases.User.CreateUser;
+namespace MeusPila.Application.UseCases.Admin.CreateUser;
 
 public record CreateUserOutputDto
 {

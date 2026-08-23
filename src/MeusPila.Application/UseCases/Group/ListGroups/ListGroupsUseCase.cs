@@ -67,10 +67,14 @@ public class ListGroupsUseCase : IListGroupsUseCase
             {
                 Id = h.Id,
                 Name = h.Name,
+                OwnerId = h.OwnerId.ToString(),
+                OwnerName = h.Owner.Name,
                 CreatedAt = h.CreatedAt,
                 CreatedById = h.CreatedById?.ToString(),
+                CreatedByName = h.CreatedBy?.Name,
                 UpdatedAt = h.UpdatedAt,
                 UpdatedById = h.UpdatedById?.ToString(),
+                UpdatedByName = h.UpdatedBy?.Name,
             }),
         };
     }

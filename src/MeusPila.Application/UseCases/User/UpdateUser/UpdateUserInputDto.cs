@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MeusPila.Application.UseCases.User.UpdateUser;
 
-public record UpdateUserInputDto
+public record UpdateUserQueryDto
 {
     [Required(ErrorMessage = "O ID do usuário é obrigatório.")]
-    public string Id { get; init; } = string.Empty;
+    public required string Id { get; init; }
 
     [StringLength(100, ErrorMessage = "O nome do usuário não pode exceder 100 caracteres.")]
     public string? Name { get; init; }
@@ -22,5 +22,18 @@ public record UpdateUserInputDto
     )]
     public string? NewPassword { get; init; }
     public bool? IsActive { get; init; }
-    public string? UpdatedById { get; init; }
+}
+
+public record UpdateUserInputDto
+{
+    public required string Id { get; init; }
+    public string? Name { get; init; }
+    public string? Email { get; init; }
+
+    public string? CurrentPassword { get; init; }
+
+    public string? NewPassword { get; init; }
+    public bool? IsActive { get; init; }
+
+    public required string UpdatedById { get; init; }
 }

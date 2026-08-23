@@ -2,7 +2,7 @@ using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
 using UserEntity = MeusPila.Domain.Entities.User;
 
-namespace MeusPila.Application.UseCases.User.CreateUser;
+namespace MeusPila.Application.UseCases.Admin.CreateUser;
 
 public interface ICreateUserUseCase : IUseCase<CreateUserInputDto, CreateUserOutputDto> { }
 
@@ -31,7 +31,6 @@ public class CreateUserUseCase : ICreateUserUseCase
             PasswordHash = string.Empty, // Will be set after hashing
             Role = input.Role,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
         };
         var passwordService = new PasswordService();
         user.PasswordHash = passwordService.HashPassword(user, input.Password);
