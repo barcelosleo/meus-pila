@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using MeusPila.Application.UseCases.Bank.CreateBank;
+using MeusPila.Application.UseCases.Bank.GetBank;
 using MeusPila.Application.UseCases.Bank.ListBanks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,16 +14,19 @@ public class BanksController : ControllerBase
     private readonly ILogger<BanksController> _logger;
     private readonly IListBanksUseCase _listBanksUseCase;
     private readonly ICreateBankUseCase _createBankUseCase;
+    private readonly IGetBankUseCase _getBankUseCase;
 
     public BanksController(
         ILogger<BanksController> logger,
         IListBanksUseCase listBanksUseCase,
-        ICreateBankUseCase createBankUseCase
+        ICreateBankUseCase createBankUseCase,
+        IGetBankUseCase getBankUseCase
     )
     {
         _logger = logger;
         _listBanksUseCase = listBanksUseCase;
         _createBankUseCase = createBankUseCase;
+        _getBankUseCase = getBankUseCase;
     }
 
     [HttpPost]
@@ -59,6 +63,22 @@ public class BanksController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error listing banks.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetBankOutputDto>> GetBank([FromRoute] string id)
+    {
+        try
+        {
+            var input = new GetBankInputDto { Id = id };
+            var output = await _getBankUseCase.ExecuteAsync(input);
+            return Ok(output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting bank.");
             return BadRequest(new { message = ex.Message });
         }
     }
