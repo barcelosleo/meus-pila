@@ -30,6 +30,13 @@ public static class Startup
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGroupRepository, GroupRepository>();
+        services.AddScoped<IBankRepository, BankRepository>();
+        services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+        services.AddScoped<ICreditCardRepository, CreditCardRepository>();
+        services.AddScoped<IFinancialCategoryRepository, FinancialCategoryRepository>();
+        services.AddScoped<IFinancialTransactionRepository, FinancialTransactionRepository>();
+        services.AddScoped<ICompositeTransactionRepository, CompositeTransactionRepository>();
+        services.AddScoped<IInstallmentTransactionRepository, InstallmentTransactionRepository>();
         return services;
     }
 
