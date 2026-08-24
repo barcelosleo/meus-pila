@@ -2,6 +2,7 @@ using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
 using MeusPila.Application.UseCases.Admin.CreateUser;
 using MeusPila.Application.UseCases.Admin.ListUsers;
+using MeusPila.Application.UseCases.Bank.CreateBank;
 using MeusPila.Application.UseCases.Bank.ListBanks;
 using MeusPila.Application.UseCases.Group.AddMember;
 using MeusPila.Application.UseCases.Group.CreateGroup;
@@ -32,6 +33,7 @@ public static class Startup
 
         // Bank Use Cases
         services.AddScoped<IListBanksUseCase, ListBanksUseCase>();
+        services.AddScoped<ICreateBankUseCase, CreateBankUseCase>();
 
         // User Use Cases
         services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
