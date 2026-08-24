@@ -124,6 +124,7 @@ public class GroupsController : ControllerBase
             {
                 Id = id,
                 Name = input.Name,
+                OwnerId = input.OwnerId,
                 UpdatedById = updatedById!,
             };
             var result = await _updateGroupUseCase.ExecuteAsync(updateInput);

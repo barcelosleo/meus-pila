@@ -28,26 +28,35 @@ public class UpdateGroupUseCase : IUpdateGroupUseCase
             throw new ArgumentException($"O grupo com ID {input.Id} não foi encontrado.");
         }
 
+        if (!string.IsNullOrEmpty(input.OwnerId))
+        {
+            Guid ownerId = Guid.Parse(input.OwnerId);
+            UserEntity? owner = await _userRepository.GetByIdAsync(ownerId);
+            if (owner == null)
+            {
+                throw new ArgumentException($"O proprietário do grupo com ID {input.OwnerId} não foi encontrado.");
+            }
+            group.Owner = owner;
+            group.OwnerId = owner.Id;
+        }
+
+        Guid updatedById = Guid.Parse(input.UpdatedById);
+        UserEntity? updatedBy = await _userRepository.GetByIdAsync(updatedById);
+        if (updatedBy == null)
+        {
+            throw new ArgumentException(
+                $"O usuário que está criando o grupo com ID {input.UpdatedById} não foi encontrado."
+            );
+        }
+
         if (!string.IsNullOrEmpty(input.Name))
         {
             group.Name = input.Name;
         }
 
-        if (!string.IsNullOrEmpty(input.UpdatedById))
-        {
-            Guid updatedById = Guid.Parse(input.UpdatedById);
-            UserEntity? updatedBy = await _userRepository.GetByIdAsync(updatedById);
-            if (updatedBy == null)
-            {
-                throw new ArgumentException(
-                    $"O usuário que está criando o grupo com ID {input.UpdatedById} não foi encontrado."
-                );
-            }
-            group.UpdatedBy = updatedBy;
-            group.UpdatedById = updatedBy.Id;
-        }
-
         group.UpdatedAt = DateTime.UtcNow;
+        group.UpdatedBy = updatedBy;
+        group.UpdatedById = updatedBy.Id;
 
         GroupEntity updatedGroup = await _groupRepository.UpdateAsync(group);
 

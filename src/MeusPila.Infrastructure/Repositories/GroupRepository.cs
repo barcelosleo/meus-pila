@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MeusPila.Application.Interfaces;
 using MeusPila.Domain.Entities;
 using MeusPila.Infrastructure.Data;
@@ -10,6 +11,32 @@ public class GroupRepository : BaseRepository<Group>, IGroupRepository
 {
     public GroupRepository(ApplicationDbContext dbContext)
         : base(dbContext) { }
+
+    public override Task<IEnumerable<Group>> GetAllAsync(
+        Expression<Func<Group, bool>> predicate,
+        int pageNumber,
+        int pageSize,
+        IEnumerable<IQueryOrdering> orderings
+    )
+    {
+        IQueryable<Group> query = _dbSet
+            .Include(g => g.Owner)
+            .Include(g => g.CreatedBy)
+            .Include(g => g.UpdatedBy)
+            .Where(predicate);
+
+        bool isFirst = true;
+        foreach (var ordering in orderings)
+        {
+            var propertyInfo = typeof(Group).GetProperty(ordering.OrderingPropertyName);
+            if (propertyInfo == null)
+                continue;
+
+            query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
+            isFirst = false;
+        }
+        return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
+    }
 
     public async Task<bool> IsMemberOfGroupAsync(Group household, UserEntity user)
     {

@@ -10,10 +10,10 @@ public record GroupDto
     public string OwnerName { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public string? CreatedById { get; init; }
-    public string? CreatedByName { get; init; }
+    public string? CreatedByName { get; init; } = string.Empty;
     public DateTime? UpdatedAt { get; init; }
     public string? UpdatedById { get; init; }
-    public string? UpdatedByName { get; init; }
+    public string? UpdatedByName { get; init; } = string.Empty;
 }
 
 public record ListGroupsOutputDto : IPagedList<GroupDto>
