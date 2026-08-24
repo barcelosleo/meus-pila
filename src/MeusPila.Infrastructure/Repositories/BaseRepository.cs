@@ -1,13 +1,14 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using MeusPila.Application.Interfaces;
+using MeusPila.Domain.Interfaces;
 using MeusPila.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MeusPila.Infrastructure.Repositories;
 
 public class BaseRepository<TEntity> : IRepository<TEntity>
-    where TEntity : class
+    where TEntity : class, IEntity
 {
     protected readonly ApplicationDbContext _dbContext;
     protected readonly DbSet<TEntity> _dbSet;
@@ -47,7 +48,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public virtual Task<TEntity?> GetByIdAsync(Guid id)
     {
-        return _dbSet.FindAsync(id).AsTask();
+        return GetDbSetRelations().FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public virtual Task<IEnumerable<TEntity>> GetAllAsync()
