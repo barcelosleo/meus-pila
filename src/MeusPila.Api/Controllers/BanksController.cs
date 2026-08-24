@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MeusPila.Application.UseCases.Bank.CreateBank;
 using MeusPila.Application.UseCases.Bank.GetBank;
 using MeusPila.Application.UseCases.Bank.ListBanks;
+using MeusPila.Application.UseCases.Bank.UpdateBank;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,18 +16,21 @@ public class BanksController : ControllerBase
     private readonly IListBanksUseCase _listBanksUseCase;
     private readonly ICreateBankUseCase _createBankUseCase;
     private readonly IGetBankUseCase _getBankUseCase;
+    private readonly IUpdateBankUseCase _updateBankUseCase;
 
     public BanksController(
         ILogger<BanksController> logger,
         IListBanksUseCase listBanksUseCase,
         ICreateBankUseCase createBankUseCase,
-        IGetBankUseCase getBankUseCase
+        IGetBankUseCase getBankUseCase,
+        IUpdateBankUseCase updateBankUseCase
     )
     {
         _logger = logger;
         _listBanksUseCase = listBanksUseCase;
         _createBankUseCase = createBankUseCase;
         _getBankUseCase = getBankUseCase;
+        _updateBankUseCase = updateBankUseCase;
     }
 
     [HttpPost]
@@ -79,6 +83,34 @@ public class BanksController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting bank.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [HttpPatch("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<UpdateBankOutputDto>> UpdateBank(
+        [FromRoute] string id,
+        [FromBody] UpdateBankQueryDto input
+    )
+    {
+        try
+        {
+            string? requesterUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var inputDto = new UpdateBankInputDto
+            {
+                Id = id,
+                Name = input.Name,
+                Code = input.Code,
+                UpdatedById = requesterUserId!,
+            };
+            var output = await _updateBankUseCase.ExecuteAsync(inputDto);
+            return Ok(output);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating bank.");
             return BadRequest(new { message = ex.Message });
         }
     }
