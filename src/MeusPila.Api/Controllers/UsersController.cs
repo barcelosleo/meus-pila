@@ -16,45 +16,22 @@ namespace MeusPila.Api.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
-    private readonly IAuthenticateUserUseCase _authenticateUserUseCase;
-    private readonly ICreateUserUseCase _createUserUseCase;
-    private readonly IRefreshTokenUseCase _refreshTokenUseCase;
-    private readonly IListUsersUseCase _listUsersUseCase;
-    private readonly IGetUserUseCase _getUserUseCase;
-    private readonly IRemoveUserUseCase _removeUserUseCase;
 
-    private readonly IUpdateUserUseCase _updateUserUseCase;
-
-    public UsersController(
-        ILogger<UsersController> logger,
-        IAuthenticateUserUseCase authenticateUserUseCase,
-        ICreateUserUseCase createUserUseCase,
-        IRefreshTokenUseCase refreshTokenUseCase,
-        IListUsersUseCase listUsersUseCase,
-        IGetUserUseCase getUserUseCase,
-        IRemoveUserUseCase removeUserUseCase,
-        IUpdateUserUseCase updateUserUseCase
-    )
+    public UsersController(ILogger<UsersController> logger)
     {
         _logger = logger;
-        _authenticateUserUseCase = authenticateUserUseCase;
-        _createUserUseCase = createUserUseCase;
-        _refreshTokenUseCase = refreshTokenUseCase;
-        _listUsersUseCase = listUsersUseCase;
-        _getUserUseCase = getUserUseCase;
-        _removeUserUseCase = removeUserUseCase;
-        _updateUserUseCase = updateUserUseCase;
     }
 
     [HttpPost("authenticate")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthenticateUserOutputDto>> AuthenticateUser(
-        [FromBody] AuthenticateUserInputDto input
+        [FromBody] AuthenticateUserInputDto input,
+        [FromServices] IAuthenticateUserUseCase authenticateUserUseCase
     )
     {
         try
         {
-            var output = await _authenticateUserUseCase.ExecuteAsync(input);
+            var output = await authenticateUserUseCase.ExecuteAsync(input);
             return Ok(output);
         }
         catch (Exception ex)
@@ -66,11 +43,14 @@ public class UsersController : ControllerBase
 
     [HttpPost("refresh-token")]
     [AllowAnonymous]
-    public async Task<ActionResult<RefreshTokenOutputDto>> RefreshToken([FromBody] RefreshTokenInputDto refreshToken)
+    public async Task<ActionResult<RefreshTokenOutputDto>> RefreshToken(
+        [FromBody] RefreshTokenInputDto refreshToken,
+        [FromServices] IRefreshTokenUseCase refreshTokenUseCase
+    )
     {
         try
         {
-            var output = await _refreshTokenUseCase.ExecuteAsync(refreshToken);
+            var output = await refreshTokenUseCase.ExecuteAsync(refreshToken);
             return Ok(output);
         }
         catch (Exception ex)
@@ -82,14 +62,12 @@ public class UsersController : ControllerBase
 
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<GetUserOutputDto>> GetCurrentUser()
+    public async Task<ActionResult<GetUserOutputDto>> GetCurrentUser([FromServices] IGetUserUseCase getUserUseCase)
     {
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var output = await _getUserUseCase.ExecuteAsync(
-                new GetUserInputDto { Id = userId!, RequesterId = userId! }
-            );
+            var output = await getUserUseCase.ExecuteAsync(new GetUserInputDto { Id = userId!, RequesterId = userId! });
             return Ok(output);
         }
         catch (Exception ex)
@@ -101,11 +79,14 @@ public class UsersController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "Admin,GroupManager")]
-    public async Task<ActionResult<CreateUserOutputDto>> CreateUser([FromBody] CreateUserInputDto input)
+    public async Task<ActionResult<CreateUserOutputDto>> CreateUser(
+        [FromBody] CreateUserInputDto input,
+        [FromServices] ICreateUserUseCase createUserUseCase
+    )
     {
         try
         {
-            var output = await _createUserUseCase.ExecuteAsync(input);
+            var output = await createUserUseCase.ExecuteAsync(input);
             return Ok(output);
         }
         catch (Exception ex)
@@ -117,11 +98,14 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<ListUsersOutputDto>> ListUsers([FromQuery] ListUsersInputDto input)
+    public async Task<ActionResult<ListUsersOutputDto>> ListUsers(
+        [FromQuery] ListUsersInputDto input,
+        [FromServices] IListUsersUseCase listUsersUseCase
+    )
     {
         try
         {
-            var output = await _listUsersUseCase.ExecuteAsync(input);
+            var output = await listUsersUseCase.ExecuteAsync(input);
             return Ok(output);
         }
         catch (Exception ex)
@@ -133,14 +117,15 @@ public class UsersController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize]
-    public async Task<ActionResult<GetUserOutputDto>> GetUserById([FromRoute] string id)
+    public async Task<ActionResult<GetUserOutputDto>> GetUserById(
+        [FromRoute] string id,
+        [FromServices] IGetUserUseCase getUserUseCase
+    )
     {
         string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var output = await _getUserUseCase.ExecuteAsync(
-                new GetUserInputDto { Id = id, RequesterId = requesterId! }
-            );
+            var output = await getUserUseCase.ExecuteAsync(new GetUserInputDto { Id = id, RequesterId = requesterId! });
             return Ok(output);
         }
         catch (Exception ex)
@@ -152,12 +137,15 @@ public class UsersController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> RemoveUser([FromRoute] string id)
+    public async Task<ActionResult> RemoveUser(
+        [FromRoute] string id,
+        [FromServices] IRemoveUserUseCase removeUserUseCase
+    )
     {
         string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            await _removeUserUseCase.ExecuteAsync(new RemoveUserInputDto { Id = id, RequesterId = requesterId! });
+            await removeUserUseCase.ExecuteAsync(new RemoveUserInputDto { Id = id, RequesterId = requesterId! });
             return NoContent();
         }
         catch (Exception ex)
@@ -172,7 +160,8 @@ public class UsersController : ControllerBase
     [Authorize]
     public async Task<ActionResult<UpdateUserOutputDto>> UpdateUser(
         [FromRoute] string id,
-        [FromBody] UpdateUserQueryDto input
+        [FromBody] UpdateUserQueryDto input,
+        [FromServices] IUpdateUserUseCase updateUserUseCase
     )
     {
         string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -188,7 +177,7 @@ public class UsersController : ControllerBase
                 IsActive = input.IsActive,
                 UpdatedById = requesterId!,
             };
-            var output = await _updateUserUseCase.ExecuteAsync(inputDto);
+            var output = await updateUserUseCase.ExecuteAsync(inputDto);
             return Ok(output);
         }
         catch (Exception ex)

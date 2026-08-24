@@ -16,45 +16,25 @@ namespace MeusPila.Api.Controllers;
 public class GroupsController : ControllerBase
 {
     private readonly ILogger<GroupsController> _logger;
-    private readonly ICreateGroupUseCase _createGroupUseCase;
-    private readonly IListGroupsUseCase _listGroupsUseCase;
-    private readonly IGetGroupUseCase _getGroupUseCase;
-    private readonly IUpdateGroupUseCase _updateGroupUseCase;
-    private readonly IAddMemberUseCase _addMemberUseCase;
-    private readonly IRemoveMemberUseCase _removeMemberUseCase;
-    private readonly IRemoveGroupUseCase _removeGroupUseCase;
 
-    public GroupsController(
-        ILogger<GroupsController> logger,
-        ICreateGroupUseCase createGroupUseCase,
-        IListGroupsUseCase listGroupsUseCase,
-        IGetGroupUseCase getGroupUseCase,
-        IUpdateGroupUseCase updateGroupUseCase,
-        IAddMemberUseCase addMemberUseCase,
-        IRemoveMemberUseCase removeMemberUseCase,
-        IRemoveGroupUseCase removeGroupUseCase
-    )
+    public GroupsController(ILogger<GroupsController> logger)
     {
         _logger = logger;
-        _createGroupUseCase = createGroupUseCase;
-        _listGroupsUseCase = listGroupsUseCase;
-        _getGroupUseCase = getGroupUseCase;
-        _updateGroupUseCase = updateGroupUseCase;
-        _addMemberUseCase = addMemberUseCase;
-        _removeMemberUseCase = removeMemberUseCase;
-        _removeGroupUseCase = removeGroupUseCase;
     }
 
     [HttpGet("{id}")]
     [Authorize]
-    public async Task<ActionResult<GetGroupOutputDto>> GetGroup(string id)
+    public async Task<ActionResult<GetGroupOutputDto>> GetGroup(
+        string id,
+        [FromServices] IGetGroupUseCase getGroupUseCase
+    )
     {
         try
         {
             string? requesterUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var input = new GetGroupInputDto { RequesterId = requesterUserId!, GroupId = id };
 
-            var result = await _getGroupUseCase.ExecuteAsync(input);
+            var result = await getGroupUseCase.ExecuteAsync(input);
             return Ok(result);
         }
         catch (Exception ex)
@@ -66,7 +46,10 @@ public class GroupsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<ListGroupsOutputDto>> ListGroups([FromQuery] ListGroupsQueryDto query)
+    public async Task<ActionResult<ListGroupsOutputDto>> ListGroups(
+        [FromQuery] ListGroupsQueryDto query,
+        [FromServices] IListGroupsUseCase listGroupsUseCase
+    )
     {
         try
         {
@@ -80,7 +63,7 @@ public class GroupsController : ControllerBase
                 Ordering = query.Ordering,
             };
 
-            var result = await _listGroupsUseCase.ExecuteAsync(input);
+            var result = await listGroupsUseCase.ExecuteAsync(input);
             return Ok(result);
         }
         catch (Exception ex)
@@ -92,7 +75,10 @@ public class GroupsController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<CreateGroupOutputDto>> CreateGroup([FromBody] CreateGroupQueryDto query)
+    public async Task<ActionResult<CreateGroupOutputDto>> CreateGroup(
+        [FromBody] CreateGroupQueryDto query,
+        [FromServices] ICreateGroupUseCase createGroupUseCase
+    )
     {
         try
         {
@@ -103,7 +89,7 @@ public class GroupsController : ControllerBase
                 OwnerId = query.OwnerId,
                 CreatedById = requesterUserId!,
             };
-            var result = await _createGroupUseCase.ExecuteAsync(input);
+            var result = await createGroupUseCase.ExecuteAsync(input);
             return Ok(result);
         }
         catch (Exception ex)
@@ -115,7 +101,11 @@ public class GroupsController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<ActionResult<UpdateGroupOutputDto>> UpdateGroup(string id, [FromBody] UpdateGroupQueryDto input)
+    public async Task<ActionResult<UpdateGroupOutputDto>> UpdateGroup(
+        string id,
+        [FromBody] UpdateGroupQueryDto input,
+        [FromServices] IUpdateGroupUseCase updateGroupUseCase
+    )
     {
         try
         {
@@ -127,7 +117,7 @@ public class GroupsController : ControllerBase
                 OwnerId = input.OwnerId,
                 UpdatedById = updatedById!,
             };
-            var result = await _updateGroupUseCase.ExecuteAsync(updateInput);
+            var result = await updateGroupUseCase.ExecuteAsync(updateInput);
             return Ok(result);
         }
         catch (Exception ex)
@@ -139,7 +129,11 @@ public class GroupsController : ControllerBase
 
     [HttpPatch("{id}/add-member/{userId}")]
     [Authorize]
-    public async Task<ActionResult<AddMemberOutputDto>> AddMember(string id, string userId)
+    public async Task<ActionResult<AddMemberOutputDto>> AddMember(
+        string id,
+        string userId,
+        [FromServices] IAddMemberUseCase addMemberUseCase
+    )
     {
         try
         {
@@ -150,7 +144,7 @@ public class GroupsController : ControllerBase
                 MemberId = userId,
                 UpdatedById = requesterId!,
             };
-            var result = await _addMemberUseCase.ExecuteAsync(input);
+            var result = await addMemberUseCase.ExecuteAsync(input);
             return Ok(result);
         }
         catch (Exception ex)
@@ -162,7 +156,11 @@ public class GroupsController : ControllerBase
 
     [HttpDelete("{id}/remove-member/{userId}")]
     [Authorize]
-    public async Task<ActionResult<RemoveMemberOutputDto>> RemoveMember(string id, string userId)
+    public async Task<ActionResult<RemoveMemberOutputDto>> RemoveMember(
+        string id,
+        string userId,
+        [FromServices] IRemoveMemberUseCase removeMemberUseCase
+    )
     {
         try
         {
@@ -173,7 +171,7 @@ public class GroupsController : ControllerBase
                 MemberId = userId,
                 UpdatedById = requesterId!,
             };
-            var result = await _removeMemberUseCase.ExecuteAsync(input);
+            var result = await removeMemberUseCase.ExecuteAsync(input);
             return Ok(result);
         }
         catch (Exception ex)
@@ -185,13 +183,13 @@ public class GroupsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
-    public async Task<ActionResult> RemoveGroup(string id)
+    public async Task<ActionResult> RemoveGroup(string id, [FromServices] IRemoveGroupUseCase removeGroupUseCase)
     {
         try
         {
             string? requesterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var input = new RemoveGroupInputDto { GroupId = id, RequesterId = requesterId! };
-            await _removeGroupUseCase.ExecuteAsync(input);
+            await removeGroupUseCase.ExecuteAsync(input);
             return NoContent();
         }
         catch (Exception ex)

@@ -14,32 +14,18 @@ namespace MeusPila.Api.Controllers;
 public class BanksController : ControllerBase
 {
     private readonly ILogger<BanksController> _logger;
-    private readonly IListBanksUseCase _listBanksUseCase;
-    private readonly ICreateBankUseCase _createBankUseCase;
-    private readonly IGetBankUseCase _getBankUseCase;
-    private readonly IUpdateBankUseCase _updateBankUseCase;
-    private readonly IRemoveBankUseCase _removeBankUseCase;
 
-    public BanksController(
-        ILogger<BanksController> logger,
-        IListBanksUseCase listBanksUseCase,
-        ICreateBankUseCase createBankUseCase,
-        IGetBankUseCase getBankUseCase,
-        IUpdateBankUseCase updateBankUseCase,
-        IRemoveBankUseCase removeBankUseCase
-    )
+    public BanksController(ILogger<BanksController> logger)
     {
         _logger = logger;
-        _listBanksUseCase = listBanksUseCase;
-        _createBankUseCase = createBankUseCase;
-        _getBankUseCase = getBankUseCase;
-        _updateBankUseCase = updateBankUseCase;
-        _removeBankUseCase = removeBankUseCase;
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<CreateBankOutputDto>> CreateBank([FromBody] CreateBankQueryDto input)
+    public async Task<ActionResult<CreateBankOutputDto>> CreateBank(
+        [FromBody] CreateBankQueryDto input,
+        [FromServices] ICreateBankUseCase createBankUseCase
+    )
     {
         try
         {
@@ -50,7 +36,7 @@ public class BanksController : ControllerBase
                 Code = input.Code,
                 CreatedById = requesterUserId!,
             };
-            var output = await _createBankUseCase.ExecuteAsync(inputDto);
+            var output = await createBankUseCase.ExecuteAsync(inputDto);
             return CreatedAtAction(nameof(CreateBank), new { id = output.Id }, output);
         }
         catch (Exception ex)
@@ -61,11 +47,14 @@ public class BanksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ListBanksOutputDto>> ListBanks([FromQuery] ListBanksInputDto input)
+    public async Task<ActionResult<ListBanksOutputDto>> ListBanks(
+        [FromQuery] ListBanksInputDto input,
+        [FromServices] IListBanksUseCase listBanksUseCase
+    )
     {
         try
         {
-            var output = await _listBanksUseCase.ExecuteAsync(input);
+            var output = await listBanksUseCase.ExecuteAsync(input);
             return Ok(output);
         }
         catch (Exception ex)
@@ -76,12 +65,15 @@ public class BanksController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<GetBankOutputDto>> GetBank([FromRoute] string id)
+    public async Task<ActionResult<GetBankOutputDto>> GetBank(
+        [FromRoute] string id,
+        [FromServices] IGetBankUseCase getBankUseCase
+    )
     {
         try
         {
             var input = new GetBankInputDto { Id = id };
-            var output = await _getBankUseCase.ExecuteAsync(input);
+            var output = await getBankUseCase.ExecuteAsync(input);
             return Ok(output);
         }
         catch (Exception ex)
@@ -96,7 +88,8 @@ public class BanksController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<UpdateBankOutputDto>> UpdateBank(
         [FromRoute] string id,
-        [FromBody] UpdateBankQueryDto input
+        [FromBody] UpdateBankQueryDto input,
+        [FromServices] IUpdateBankUseCase updateBankUseCase
     )
     {
         try
@@ -109,7 +102,7 @@ public class BanksController : ControllerBase
                 Code = input.Code,
                 UpdatedById = requesterUserId!,
             };
-            var output = await _updateBankUseCase.ExecuteAsync(inputDto);
+            var output = await updateBankUseCase.ExecuteAsync(inputDto);
             return Ok(output);
         }
         catch (Exception ex)
@@ -121,13 +114,16 @@ public class BanksController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> RemoveBank([FromRoute] string id)
+    public async Task<ActionResult> RemoveBank(
+        [FromRoute] string id,
+        [FromServices] IRemoveBankUseCase removeBankUseCase
+    )
     {
         try
         {
             string? requesterUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var input = new RemoveBankInputDto { Id = id, RequesterId = requesterUserId! };
-            await _removeBankUseCase.ExecuteAsync(input);
+            await removeBankUseCase.ExecuteAsync(input);
             return NoContent();
         }
         catch (Exception ex)
