@@ -19,11 +19,7 @@ public class GroupRepository : BaseRepository<Group>, IGroupRepository
         IEnumerable<IQueryOrdering> orderings
     )
     {
-        IQueryable<Group> query = _dbSet
-            .Include(g => g.Owner)
-            .Include(g => g.CreatedBy)
-            .Include(g => g.UpdatedBy)
-            .Where(predicate);
+        IQueryable<Group> query = _dbSet.Include(g => g.Owner).Where(predicate);
 
         bool isFirst = true;
         foreach (var ordering in orderings)
