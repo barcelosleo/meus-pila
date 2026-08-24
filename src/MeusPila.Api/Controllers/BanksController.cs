@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MeusPila.Application.UseCases.Bank.CreateBank;
 using MeusPila.Application.UseCases.Bank.GetBank;
 using MeusPila.Application.UseCases.Bank.ListBanks;
+using MeusPila.Application.UseCases.Bank.RemoveBank;
 using MeusPila.Application.UseCases.Bank.UpdateBank;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +18,15 @@ public class BanksController : ControllerBase
     private readonly ICreateBankUseCase _createBankUseCase;
     private readonly IGetBankUseCase _getBankUseCase;
     private readonly IUpdateBankUseCase _updateBankUseCase;
+    private readonly IRemoveBankUseCase _removeBankUseCase;
 
     public BanksController(
         ILogger<BanksController> logger,
         IListBanksUseCase listBanksUseCase,
         ICreateBankUseCase createBankUseCase,
         IGetBankUseCase getBankUseCase,
-        IUpdateBankUseCase updateBankUseCase
+        IUpdateBankUseCase updateBankUseCase,
+        IRemoveBankUseCase removeBankUseCase
     )
     {
         _logger = logger;
@@ -31,6 +34,7 @@ public class BanksController : ControllerBase
         _createBankUseCase = createBankUseCase;
         _getBankUseCase = getBankUseCase;
         _updateBankUseCase = updateBankUseCase;
+        _removeBankUseCase = removeBankUseCase;
     }
 
     [HttpPost]
@@ -111,6 +115,24 @@ public class BanksController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating bank.");
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> RemoveBank([FromRoute] string id)
+    {
+        try
+        {
+            string? requesterUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var input = new RemoveBankInputDto { Id = id, RequesterId = requesterUserId! };
+            await _removeBankUseCase.ExecuteAsync(input);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing bank.");
             return BadRequest(new { message = ex.Message });
         }
     }

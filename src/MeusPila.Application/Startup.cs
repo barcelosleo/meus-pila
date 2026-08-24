@@ -5,6 +5,7 @@ using MeusPila.Application.UseCases.Admin.ListUsers;
 using MeusPila.Application.UseCases.Bank.CreateBank;
 using MeusPila.Application.UseCases.Bank.GetBank;
 using MeusPila.Application.UseCases.Bank.ListBanks;
+using MeusPila.Application.UseCases.Bank.RemoveBank;
 using MeusPila.Application.UseCases.Bank.UpdateBank;
 using MeusPila.Application.UseCases.Group.AddMember;
 using MeusPila.Application.UseCases.Group.CreateGroup;
@@ -38,6 +39,7 @@ public static class Startup
         services.AddScoped<ICreateBankUseCase, CreateBankUseCase>();
         services.AddScoped<IGetBankUseCase, GetBankUseCase>();
         services.AddScoped<IUpdateBankUseCase, UpdateBankUseCase>();
+        services.AddScoped<IRemoveBankUseCase, RemoveBankUseCase>();
 
         // User Use Cases
         services.AddScoped<IAuthenticateUserUseCase, AuthenticateUserUseCase>();
