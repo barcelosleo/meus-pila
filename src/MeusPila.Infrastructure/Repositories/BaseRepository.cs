@@ -40,6 +40,11 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         return (IQueryable<TEntity>)method.Invoke(null, [query, lambda])!;
     }
 
+    protected virtual IQueryable<TEntity> GetDbSetRelations()
+    {
+        return _dbSet.AsQueryable();
+    }
+
     public virtual Task<TEntity?> GetByIdAsync(Guid id)
     {
         return _dbSet.FindAsync(id).AsTask();
@@ -52,7 +57,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public virtual Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<IQueryOrdering> orderings)
     {
-        IQueryable<TEntity> query = _dbSet;
+        IQueryable<TEntity> query = GetDbSetRelations();
         bool isFirst = true;
         foreach (var ordering in orderings)
         {
@@ -68,7 +73,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public virtual Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        return Task.FromResult(_dbSet.Where(predicate).AsEnumerable());
+        return Task.FromResult(GetDbSetRelations().Where(predicate).AsEnumerable());
     }
 
     public virtual Task<IEnumerable<TEntity>> GetAllAsync(
@@ -76,7 +81,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         IEnumerable<IQueryOrdering> orderings
     )
     {
-        IQueryable<TEntity> query = _dbSet.Where(predicate);
+        IQueryable<TEntity> query = GetDbSetRelations().Where(predicate);
         bool isFirst = true;
         foreach (var ordering in orderings)
         {
@@ -92,7 +97,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public virtual Task<IEnumerable<TEntity>> GetAllAsync(int pageNumber, int pageSize)
     {
-        IQueryable<TEntity> query = _dbSet;
+        IQueryable<TEntity> query = GetDbSetRelations();
         return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
     }
 
@@ -102,7 +107,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         IEnumerable<IQueryOrdering> orderings
     )
     {
-        IQueryable<TEntity> query = _dbSet;
+        IQueryable<TEntity> query = GetDbSetRelations();
         bool isFirst = true;
         foreach (var ordering in orderings)
         {
@@ -122,7 +127,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         int pageSize
     )
     {
-        IQueryable<TEntity> query = _dbSet.Where(predicate);
+        IQueryable<TEntity> query = GetDbSetRelations().Where(predicate);
         return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
     }
 
@@ -133,7 +138,7 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
         IEnumerable<IQueryOrdering> orderings
     )
     {
-        IQueryable<TEntity> query = _dbSet.Where(predicate);
+        IQueryable<TEntity> query = GetDbSetRelations().Where(predicate);
 
         bool isFirst = true;
         foreach (var ordering in orderings)
@@ -150,17 +155,17 @@ public class BaseRepository<TEntity> : IRepository<TEntity>
 
     public virtual Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        return _dbSet.FirstOrDefaultAsync(predicate);
+        return GetDbSetRelations().FirstOrDefaultAsync(predicate);
     }
 
     public virtual Task<int> CountAsync()
     {
-        return _dbSet.CountAsync();
+        return GetDbSetRelations().CountAsync();
     }
 
     public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        return _dbSet.CountAsync(predicate);
+        return GetDbSetRelations().CountAsync(predicate);
     }
 
     public virtual async Task<TEntity> AddAsync(TEntity entity)

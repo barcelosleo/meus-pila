@@ -12,26 +12,9 @@ public class GroupRepository : BaseRepository<Group>, IGroupRepository
     public GroupRepository(ApplicationDbContext dbContext)
         : base(dbContext) { }
 
-    public override Task<IEnumerable<Group>> GetAllAsync(
-        Expression<Func<Group, bool>> predicate,
-        int pageNumber,
-        int pageSize,
-        IEnumerable<IQueryOrdering> orderings
-    )
+    protected override IQueryable<Group> GetDbSetRelations()
     {
-        IQueryable<Group> query = _dbSet.Include(g => g.Owner).Where(predicate);
-
-        bool isFirst = true;
-        foreach (var ordering in orderings)
-        {
-            var propertyInfo = typeof(Group).GetProperty(ordering.OrderingPropertyName);
-            if (propertyInfo == null)
-                continue;
-
-            query = ApplyOrdering(query, propertyInfo, ordering.Descending, isFirst);
-            isFirst = false;
-        }
-        return Task.FromResult(query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsEnumerable());
+        return _dbSet.Include(g => g.Owner).Include(b => b.CreatedBy).Include(b => b.UpdatedBy);
     }
 
     public async Task<bool> IsMemberOfGroupAsync(Group household, UserEntity user)

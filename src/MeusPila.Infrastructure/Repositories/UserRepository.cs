@@ -10,6 +10,11 @@ public class UserRepository : BaseRepository<User>, IUserRepository
     public UserRepository(ApplicationDbContext dbContext)
         : base(dbContext) { }
 
+    protected override IQueryable<User> GetDbSetRelations()
+    {
+        return _dbSet.Include(b => b.CreatedBy).Include(b => b.UpdatedBy);
+    }
+
     public async Task<bool> IsMemberOfGroupAsync(Guid userId, Guid householdId)
     {
         return await _dbContext.GroupUsers.AnyAsync(hu => hu.UserId == userId && hu.GroupId == householdId);
