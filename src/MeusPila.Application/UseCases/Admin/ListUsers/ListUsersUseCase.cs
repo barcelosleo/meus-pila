@@ -51,6 +51,7 @@ public class ListUsersUseCase : IListUsersUseCase
                 Name = user.Name,
                 Email = user.Email,
                 Role = user.Role,
+                IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 CreatedById = user.CreatedById?.ToString(),
                 CreatedByName = user.CreatedBy?.Name,

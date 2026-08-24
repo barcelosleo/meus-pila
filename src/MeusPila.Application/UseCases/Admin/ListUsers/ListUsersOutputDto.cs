@@ -8,6 +8,7 @@ public record UserDto
     public string Name { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public string Role { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public string? CreatedById { get; init; }
     public string? CreatedByName { get; init; }
