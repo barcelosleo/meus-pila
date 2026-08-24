@@ -48,6 +48,7 @@ public class AuthenticateUserUseCase : IAuthenticateUserUseCase
             Name = user.Name,
             Email = user.Email,
             IsActive = user.IsActive,
+            Role = user.Role,
             AccessToken = accessToken,
             RefreshToken = refreshToken,
         };
