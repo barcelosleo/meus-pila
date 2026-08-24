@@ -13,9 +13,9 @@ namespace MeusPila.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GroupController : ControllerBase
+public class GroupsController : ControllerBase
 {
-    private readonly ILogger<GroupController> _logger;
+    private readonly ILogger<GroupsController> _logger;
     private readonly ICreateGroupUseCase _createGroupUseCase;
     private readonly IListGroupsUseCase _listGroupsUseCase;
     private readonly IGetGroupUseCase _getGroupUseCase;
@@ -24,8 +24,8 @@ public class GroupController : ControllerBase
     private readonly IRemoveMemberUseCase _removeMemberUseCase;
     private readonly IRemoveGroupUseCase _removeGroupUseCase;
 
-    public GroupController(
-        ILogger<GroupController> logger,
+    public GroupsController(
+        ILogger<GroupsController> logger,
         ICreateGroupUseCase createGroupUseCase,
         IListGroupsUseCase listGroupsUseCase,
         IGetGroupUseCase getGroupUseCase,
@@ -100,7 +100,7 @@ public class GroupController : ControllerBase
             var input = new CreateGroupInputDto
             {
                 Name = query.Name,
-                OwnerId = requesterUserId!,
+                OwnerId = query.OwnerId,
                 CreatedById = requesterUserId!,
             };
             var result = await _createGroupUseCase.ExecuteAsync(input);

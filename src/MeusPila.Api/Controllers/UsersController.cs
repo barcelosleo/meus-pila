@@ -13,9 +13,9 @@ namespace MeusPila.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UsersController : ControllerBase
 {
-    private readonly ILogger<UserController> _logger;
+    private readonly ILogger<UsersController> _logger;
     private readonly IAuthenticateUserUseCase _authenticateUserUseCase;
     private readonly ICreateUserUseCase _createUserUseCase;
     private readonly IRefreshTokenUseCase _refreshTokenUseCase;
@@ -25,8 +25,8 @@ public class UserController : ControllerBase
 
     private readonly IUpdateUserUseCase _updateUserUseCase;
 
-    public UserController(
-        ILogger<UserController> logger,
+    public UsersController(
+        ILogger<UsersController> logger,
         IAuthenticateUserUseCase authenticateUserUseCase,
         ICreateUserUseCase createUserUseCase,
         IRefreshTokenUseCase refreshTokenUseCase,
