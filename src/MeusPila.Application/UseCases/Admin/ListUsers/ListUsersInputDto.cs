@@ -1,4 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using MeusPila.Application.Behaviours;
+using MeusPila.Application.Interfaces;
 using MeusPila.Domain.Common;
 
 namespace MeusPila.Application.UseCases.Admin.ListUsers;
@@ -22,10 +25,4 @@ public enum UsersOrdering
     CreatedByDesc,
 }
 
-public record ListUsersInputDto
-{
-    public string? SearchTerm { get; init; }
-    public IEnumerable<UsersOrdering>? Ordering { get; init; }
-    public int PageNumber { get; init; } = 1;
-    public int PageSize { get; init; } = PagedListProperties.DefaultPageSize;
-}
+public record ListUsersInputDto : AbstractInputDtoListUseCase<UsersOrdering> { }
