@@ -1,4 +1,7 @@
 using System.Text.Json.Serialization;
+using MeusPila.Api.Infrastructure;
+using MeusPila.Api.Services;
+using MeusPila.Application.Interfaces;
 using MeusPila.Infrastructure;
 
 namespace MeusPila.Api;
@@ -12,8 +15,15 @@ public static class Startup
             .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
         services.AddOpenApi();
+
         services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
         services.AddCors(configuration);
+
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
         return services;
     }
 

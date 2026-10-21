@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using MeusPila.Application.Interfaces;
 using MeusPila.Application.Services;
-using MeusPila.Domain.Common;
 using UserEntity = MeusPila.Domain.Entities.User;
 
 namespace MeusPila.Application.UseCases.Admin.ListUsers;
@@ -11,14 +10,27 @@ public interface IListUsersUseCase : IUseCase<ListUsersInputDto, ListUsersOutput
 public class ListUsersUseCase : IListUsersUseCase
 {
     private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public ListUsersUseCase(IUserRepository userRepository)
+    public ListUsersUseCase(IUserRepository userRepository, ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<ListUsersOutputDto> ExecuteAsync(ListUsersInputDto input)
     {
+        Guid requesterId = Guid.Parse(_currentUserService.UserId);
+        UserEntity? requester = await _userRepository.GetByIdAsync(requesterId);
+        if (requester == null)
+        {
+            throw new InvalidOperationException("O usuário que está listando os usuários não existe.");
+        }
+        if (requester.Role != "Admin")
+        {
+            throw new UnauthorizedAccessException("Apenas usuários com a função 'Admin' podem listar os usuários.");
+        }
+
         string? searchTerm = input.SearchTerm?.Trim();
         string? normalizedSearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.ToLower();
 

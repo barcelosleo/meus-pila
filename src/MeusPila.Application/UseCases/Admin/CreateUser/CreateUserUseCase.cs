@@ -9,10 +9,12 @@ public interface ICreateUserUseCase : IUseCase<CreateUserInputDto, CreateUserOut
 public class CreateUserUseCase : ICreateUserUseCase
 {
     private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateUserUseCase(IUserRepository userRepository)
+    public CreateUserUseCase(IUserRepository userRepository, ICurrentUserService currentUserService)
     {
         _userRepository = userRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<CreateUserOutputDto> ExecuteAsync(CreateUserInputDto input)
@@ -21,6 +23,17 @@ public class CreateUserUseCase : ICreateUserUseCase
         if (userExists)
         {
             throw new InvalidOperationException("O email informado já está em uso.");
+        }
+
+        Guid requesterId = Guid.Parse(_currentUserService.UserId);
+        UserEntity? requester = await _userRepository.GetByIdAsync(requesterId);
+        if (requester == null)
+        {
+            throw new InvalidOperationException("O usuário que está criando o novo usuário não existe.");
+        }
+        if (requester.Role != "Admin")
+        {
+            throw new UnauthorizedAccessException("Apenas usuários com a função 'Admin' podem criar novos usuários.");
         }
 
         var user = new UserEntity
